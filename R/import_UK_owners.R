@@ -10,6 +10,7 @@ unzip(file.path(onedrive,"Land Registry/UK Ownership/CCOD_FULL_2022_07.zip"),
       exdir = "tmp")
 
 lr <- readr::read_csv("tmp/CCOD_FULL_2022_07.csv")
+unlink("tmp", recursive = TRUE)
 
 freehold <- lr[lr$Tenure == "Freehold",]
 freehold <- freehold[,c(1,3:7)]
