@@ -49,7 +49,7 @@ I then built these into a tileset. As showing all the polygons in the country is
 
 While the inspire polygons are great for viewing, they contain no information about who owns the land. However, the Land Registry published two datasets which explicitly name the owners of land. The [UK companies that own property in England and Wales](https://use-land-property-data.service.gov.uk/datasets/ccod) and the [Overseas companies that own property in England and Wales](https://use-land-property-data.service.gov.uk/datasets/ocod). Anna Powell-Smith has already mapped this data [here](https://whoownsengland.org/2017/11/14/the-companies-corporate-bodies-who-own-a-third-of-england-wales/) and [here](https://www.private-eye.co.uk/registry).
 
-But there are a few limitations to their implementation.
+But there are a few limitations to her implementation.
 
 1. The data is now a few years old
 2. The geo-location appears to be postcode-based.
@@ -58,11 +58,11 @@ But there are a few limitations to their implementation.
 
 So we can do much better.
 
-This is in no way criticism of Shrubsole and Powell-Smith's excellent work. But I suspect it is a simple case of the limited resources available to them. In contrast, academics get privileged access to data and resources, which sometimes go unused. In this case, I have an enterprise-grade workstation that is usually off on evenings and weekends. So I through vastly more compute power at the problem for essentially zero cost.
+This is in no way criticism of Shrubsole and Powell-Smith's excellent work. But I suspect it is a simply case of the limited resources available to them. In contrast, academics get privileged access to data and resources, which sometimes go unused. In this case, I have an enterprise-grade workstation that is usually off on evenings and weekends. So I throw vastly more compute power at the problem for essentially zero cost.
 
 ### Challenges in Geocoding
 
-Let us look at an example of the data. The UK Company ownership data has a lot of information. Still, for geocoding pruposes, there are only a few key variables.
+Let us look at an example of the data. The UK Company ownership data has a lot of information. Still, for geocoding purposes, there are only a few key variables.
 
 |Property Address	| AdminDistrict |	PostalCode|
 | --- | --- | --- |
@@ -72,23 +72,23 @@ As far as I can tell, Powell-Smith's method was to use OpenStreetMap to geocode 
 
 But consider another example:
 
-```
+
 1-4 Crown Row, Bracknell (RG12 0TH), 3, 14, 17, 18, 21, 26, 29, 31, 45, 49, 50, 55-70, 74, 75, 77-81, 84, 85, 91-95, 101, 103, 104, 106, 110, 111 Dalcross, Bracknell (RG12 0UJ), 71-73, 76, 82, 83, 86, 87 Dalcross, Bracknell (RG12 0UL), 1, 6, 9, 11 Fencote, Bracknell (RG12 0TD), 6, 8, 9, 12, 19, 22, 25, 47, 50 Garswood, Bracknell (RG12 0TY), 52, 60, 61, 65, 67, 80 Garswood, Bracknell (RG12 0TZ), 2, 10, 14, 16, 18, 36, 40, 42-44, 58-60, 72, 76, 79, 80 Helmsdale, Bracknell (RG12 0TA), 12, 13, 15, 45, 64-67, 82, 86, 87, 96, 97-99, 108, 112-115, 118, 126, 129, 138 Helmsdale, Bracknell (RG12 0TB), 1, 6, 11, 15, 23, 24, 28, 32, 33, 42-51, 67, 68, 72, 79, 80 Keepers Coombe, Bracknell (RG12 0TW, 10, 12-14, 21, 22, 25-27, 29-31, 34-36, 41 Keepers Coombe, Bracknell (RG12 0TN), 1-9, 21, 22, 26, 27, 31, 32 Kimmeridge, Bracknell (RG12 0UD), 86, 89-93(odd), 94, 100, 102, 107, 122, 125 Leaves Green, Bracknell, (RG12 0TE), 1-6, 8-10, 13-26, 33, 34, 48-50, 54, 58, 59, 63-80 Leaves Green, Bracknell (RG1
-```
 
-In this case, this title is also given a single postcode (RG12 0TH) and a single dot on the map. One dot does not clearly convey the extent of this land holding. But it is possible to parse this into 233 unique addresses that the text refers to. This was no mean feet at the `Property Address` field is essentially free text full of different styles and spelling errors. Notice things like `89-93(odd)`, a common way to refer to a range of numbers.
 
-While this kind of text parsing is never 100% successful, it is worth doing. For example, I found 9,034 titles that contained multiple postcodes. But when they were broken up, they actually held 168,911 unique property addresses.
+In this case, this title is also given a single postcode (RG12 0TH) and a single dot on the map. One dot does not clearly convey the extent of this land ownership. But it is possible to parse this into 233 unique addresses that the text refers to. This was no mean feet as the `Property Address` field is essentially free text full of different styles and spelling errors. Notice things like `89-93(odd)`, a common way to refer to a range of numbers.
+
+While this kind of text parsing is never 100% successful, it is worth doing. For example, I found 9,034 freehold titles that contained multiple postcodes. But when they were broken up, they actually held 168,911 unique property addresses.
 
 So far, I've only looked at the freehold titles and because of the messy structure, I've had to split them up into categories.
 
 |Type	| Number of Titles |	Number of Addresses |
 | --- | --- | --- |
 |Singe postcode and a short property address |	1,431,806	| 1,776,987|
-|Singe postcode and a long property address |	124,000| 56,337 addresses and 2,316 titles too complex to parse|
+|Singe postcode and a long property address |	124,347| 456,337 addresses and 2,316 titles too complex to parse|
 |Multiple postcodes |	9,034 | 168,911|
 |Land with a postcode |	122,00| To Do|
-|Address without a postcode |	477,000 | 1,830,024 addresses and 111,191 titles too complex|
+|Address without a postcode |	477,000 | 1,830,024 addresses and 111,191 titles too complex to parse|
 |Land without a postcode |	878,000	| Todo|
 
 
@@ -104,7 +104,7 @@ We've already identified at least 4 million addresses to geocode, which is non-t
 
 I've found that the Bing API is about 90% successful at geocoding addresses, doing well with clear and well-formatted ones but struggling when the address is more ambiguous. Fortunately, we have a backup plan. The Google Maps API is better at geocoding ambiguous addresses such as "The Red Lion pub, Ipswich". Google allow 40,000 free geocodes per month, so useless as a main geocoder (it would take 8 years to do), but ok to pick up the failures from Bing and try again.
 
-Even so, this will take a while, so I will post some interim results in a few months.
+Even so, this will take a while, so I will post some interim results in a few months. For now I've put the first 300,000 points up on the map so I can test the code and visualisation.
 
 ## A few legal thoughts
 
