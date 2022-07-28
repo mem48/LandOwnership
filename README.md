@@ -1,7 +1,9 @@
 # LandOwnership
 Analysis of land ownership data in England and Wales
 
-Insipred by the the book and blog [Who Owns Englang](https://whoownsengland.org/) this repository contains analysis of [Land Registry data](https://landregistry.data.gov.uk/) about Land Onwesrhip in England and Wales.
+## [View the map](https://mem48.github.io/LandOwnership/)
+
+Inspired by the the book and blog [Who Owns Englang](https://whoownsengland.org/) this repository contains analysis of [Land Registry data](https://use-land-property-data.service.gov.uk/) about Land Ownership in England and Wales.
 
 The code focuses on two main objectives:
 
@@ -43,4 +45,70 @@ I then built these into a tileset. As showing all the polygons in the country is
 <b>Zoom in a little and you can see all the polygons</b>
 </figcaption>
 </figure>
+
+## Geocoding the UK and Oversees ownership data
+
+While the inspire polygons are great for viewing, they contain no information about who ownes the land. However the land registry published two datasets which expecitly name the owners of land. The [UK companies that own property in England and Wales](https://use-land-property-data.service.gov.uk/datasets/ccod) and the [Overseas companies that own property in England and Wales](https://use-land-property-data.service.gov.uk/datasets/ocod). Anna Powell-Smith has already mapped this data [here](https://whoownsengland.org/2017/11/14/the-companies-corporate-bodies-who-own-a-third-of-england-wales/) and [here](https://www.private-eye.co.uk/registry).
+
+But there are a few limitations to their implementation.
+
+1. The data is now a few years old
+2. The geo-location appears to be postcode-based.
+3. Properties without a postcode are missing.
+4. Multiple properties in one title are excluded.
+
+So we can do much better.
+
+This is in no way criticism of Shrubsole and Powell-Smith's work which is excellent. But I suspect a simple case of the limited resources available to them. In contrast academics get privileged access to data and resources, which sometimes go unused. In this case I have an enterprise grade workstation that is usually off at evenings and weekends. So I through vastly more compute power at the problem for essentially zero cost.
+
+### Challanges in Geocoding
+
+Lets look at an example of the data. The UK Company onwership data has a lot onf information but for geocoding pruposes there are only a few key variables.
+
+|Property Address	| AdminDistrict |	PostalCode|
+| --- | --- | --- |
+|5 West Park, Bristol (BS8 2LX) |	CITY OF BRISTOL	| BS8 2LX|
+
+As far as I can tell Powell-Smith's method was to use OpenStreetMap to geocode the Postcode, and then slightly randomise the positions of the results to account for multiple addresses at the same postcode. This is fine for this example, the point on the map is close to the true address and it is fairly clear what the point refers to.
+
+But consider another example:
+
+```
+1-4 Crown Row, Bracknell (RG12 0TH), 3, 14, 17, 18, 21, 26, 29, 31, 45, 49, 50, 55-70, 74, 75, 77-81, 84, 85, 91-95, 101, 103, 104, 106, 110, 111 Dalcross, Bracknell (RG12 0UJ), 71-73, 76, 82, 83, 86, 87 Dalcross, Bracknell (RG12 0UL), 1, 6, 9, 11 Fencote, Bracknell (RG12 0TD), 6, 8, 9, 12, 19, 22, 25, 47, 50 Garswood, Bracknell (RG12 0TY), 52, 60, 61, 65, 67, 80 Garswood, Bracknell (RG12 0TZ), 2, 10, 14, 16, 18, 36, 40, 42-44, 58-60, 72, 76, 79, 80 Helmsdale, Bracknell (RG12 0TA), 12, 13, 15, 45, 64-67, 82, 86, 87, 96, 97-99, 108, 112-115, 118, 126, 129, 138 Helmsdale, Bracknell (RG12 0TB), 1, 6, 11, 15, 23, 24, 28, 32, 33, 42-51, 67, 68, 72, 79, 80 Keepers Coombe, Bracknell (RG12 0TW, 10, 12-14, 21, 22, 25-27, 29-31, 34-36, 41 Keepers Coombe, Bracknell (RG12 0TN), 1-9, 21, 22, 26, 27, 31, 32 Kimmeridge, Bracknell (RG12 0UD), 86, 89-93(odd), 94, 100, 102, 107, 122, 125 Leaves Green, Bracknell, (RG12 0TE), 1-6, 8-10, 13-26, 33, 34, 48-50, 54, 58, 59, 63-80 Leaves Green, Bracknell (RG1
+```
+
+In this case this title is also given an single postcode (RG12 0TH) and a single dot on the map. One dot does not clearly convey the extend on this land holding. But it is possible to parse this into 233 unique addresses that the text refers to. This was no mean feet at the `Propery Address` field is essential free text full of different styles and spelling errors. Notice things like `89-93(odd)` a common way to refer to a range of numbers.
+
+While this kind of text parsing is never 100% successfully it is worth doing. For example, I found 9,034 titles that contained multiple postcodes. But when they were broken up they actually contained 168,911 unique properties.
+
+So far I've only looked at the freehold titles and because of the messy structure I've had to split them up into categories.
+
+|Type	| Number of Titles |	Number of Addresses |
+| --- | --- | --- |
+|Singe postcode and a short property address |	1,431,806	| 1,776,987|
+|Singe postcode and a long property address |	124,000| 56,337 addresses and 2,316 titles too complex to parse|
+|Multiple postcodes |	9,034 | 168,911|
+|Land with a postcode |	122,00| To Do|
+|Address without a postcode |	477,000 | 1,830,024 addresses and 111,191 titles too complex|
+|Land without a postcode |	878,000	| Todo|
+
+
+Some of these are easier to work with than others. The 1.77 millions simple addresses are easy to pass through a geocoder. But the "land" categories are harder. However their are still opportunities. For example many of the "land" titles are in the form `address and associated land` in these cases removing the "and associated land" yields a simple geocodable address.
+
+In more complex cases there are a lot of locations that are `land in front/behind address`. While we can't geocode the exact location easily we can at least extract the address and geocode that. IN the worst cases we get something in the form of `land north of somewhere road` again we can't geocode this exactly but we should at least be able to find the relevant road.
+
+My expectation is that it should be possible to improve the accuracy of the locations for 90% of the titles in Powell-Smith's map and add 60-80% of the missing titles. This will however require a lot of geocoding.
+
+### Batch Geocoding
+
+We've already identified at least 4 million addresses to geocode, which is a non-trivial amount. Fortunately I have a few tricks up my sleeve. I have a Bing Map API key that lets me do 50,000 geocodes per day, so it would take 80 days to do 4 million addresses. 80 days sounds like a lot, but given it only takes less than 30 seconds to tell the computer "run today's batch" it is really not a major time commitment. 
+
+I've found that the Bing API is about 90% successful at geocoding addresses, doing well with clear and well formatted ones but struggling when the address is more ambiguous. Fortunately we have a backup plan, the Google Maps API is better at geocoding ambiguous adresses such as "The Red Lion pub, Ipswich". Google allow 40,000 free geocodes per month, so useless as a main geocoder (it would take 8 years to do), but ok to pick up the failures from Bing and try again.
+
+Evne so this will take a while, so I will post some interim results in a few months.
+
+
+
+
+
 

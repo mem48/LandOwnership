@@ -39,3 +39,4 @@ vignettes/*.pdf
 .Renviron
 *.csv
 *.Rds
+README.html
