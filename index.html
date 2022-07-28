@@ -15,7 +15,7 @@
 <body>
 
 <!-- map -->
-<div id="map" class="map" style='width: 100%; height: 300px;'>
+<div id="map" class="map" style='width: 100%; height: 600px;'>
 <script type="text/javascript">
     // Setup Map
 var map = new maplibregl.Map({
@@ -45,11 +45,39 @@ map.addControl(new maplibregl.ScaleControl({
   unit: 'metric'
 }),'bottom-right');
     
-    
+map.on('load', function() {
+map.addSource('inspire', {
+	'type': 'vector',
+	'tiles': [
+	'https://storage.googleapis.com/vector_tiles/inspire_full/{z}/{x}/{y}.pbf'
+	],
+	'minzoom': 6,
+	'maxzoom': 16
+});
+
+map.addLayer({
+    'id': 'inspire',
+    'type': 'fill',
+    'source': 'inspire',
+    'source-layer': 'inspire',
+    'paint': {
+      'fill-color': 'rgba(188,128,189, 0.3)'
+    }
+});
+
+});
+
 </script>
 <!-- map -->
 </div>
-<p>About</p>
+<h1>Interactive map of the Land Registry Inspire Polygons</h1>
+
+
+
+<h2>Copyright Notice</h2>
+<p>This information is subject to Crown copyright and database rights 2022 and is reproduced with the <a href="https://use-land-property-data.service.gov.uk/datasets/inspire#conditions">permission of HM Land Registry</a>.</p>
+
+<p>The polygons (including the associated geometry, namely x, y co-ordinates) are subject to Crown copyright and database rights 2022 Ordnance Survey 100026316.</p>
 <div>
   
 </div>
