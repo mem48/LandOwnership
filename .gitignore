@@ -40,3 +40,5 @@ vignettes/*.pdf
 *.csv
 *.Rds
 README.html
+*.pbf
+data/tilegeojson/uk_owners.geojson
