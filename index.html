@@ -13,6 +13,12 @@
 
 </head>
 <body>
+  
+<!-- layer select -->
+<div>
+  <p><label><input type="checkbox" id="insiprecheckbox" value="true" onclick="toggleLayer('inspire')" checked>Inspire Polygons</label></p>
+  <p><label><input type="checkbox" id="landownerscheckbox" value="true" onclick="toggleLayer('landowners')" checked>Owner Points</label></p>
+</div>
 
 <!-- map -->
 <div id="map" class="map" style='width: 100%; height: 600px;'>
@@ -64,17 +70,66 @@ map.addSource('landowners', {
 	'maxzoom': 16
 });
 
-map.addLayer({
-    'id': 'inspire',
-    'type': 'fill',
-    'source': 'inspire',
-    'source-layer': 'inspire',
-    'paint': {
-      'fill-color': 'rgba(188,128,189, 0.3)'
-    }
+
+
+
+
 });
 
-map.addLayer({
+// Click on Transit transitstops
+map.on('click', 'landowners', function (e) {
+var coordinates = e.features[0].geometry.coordinates.slice();
+var Title = e.features[0].properties.Title;
+var Tenure = e.features[0].properties.Tenure;
+var Property_Address = e.features[0].properties.Property_Address;
+var Company_No = e.features[0].properties.Company_No;
+var Category = e.features[0].properties.Category;
+var geocoded_address = e.features[0].properties.geocoded_address;
+var geocode_type = e.features[0].properties.geocode_type;
+
+
+
+var description = '<p><b>' + Title + '</b></p>' +
+'<p> Tenure: ' + Tenure + '</p>' +
+'<p> Property Address: ' + Property_Address + '</p>' +
+'<p> Company No: ' + Company_No + '</p>' +
+'<p> Category: ' + Category + '</p>' +
+'<p> Geocoded address: ' + geocoded_address + '</p>' +
+'<p> Geocode type: ' + geocode_type + '</p>';
+ 
+new maplibregl.Popup()
+.setLngLat(coordinates)
+.setHTML(description)
+.addTo(map);
+});
+ 
+// Change the cursor to a pointer when the mouse is over the places layer.
+map.on('mouseenter', 'landowners', function () {
+map.getCanvas().style.cursor = 'pointer';
+});
+ 
+// Change it back to a pointer when it leaves.
+map.on('mouseleave', 'landowners', function () {
+map.getCanvas().style.cursor = '';
+});
+
+function toggleLayer(layerName){
+  var checkBox = document.getElementById(layerName.concat('checkbox'));
+  // If the checkbox is checked add the layer to the map
+  if (checkBox.checked === true){
+    switch(layerName) {
+      case 'inspire':
+        map.addLayer({
+            'id': 'inspire',
+            'type': 'fill',
+            'source': 'inspire',
+            'source-layer': 'inspire',
+            'paint': {
+              'fill-color': 'rgba(188,128,189, 0.3)'
+            }
+        });
+      case 'landowners':
+        map.addLayer({
             'id': 'landowners',
             'type': 'circle',
             'source': 'landowners',
@@ -120,45 +175,16 @@ map.addLayer({
           			]
             }
         });
-
-});
-
-// Click on Transit transitstops
-map.on('click', 'landowners', function (e) {
-var coordinates = e.features[0].geometry.coordinates.slice();
-var Title = e.features[0].properties.Title;
-var Tenure = e.features[0].properties.Tenure;
-var Property_Address = e.features[0].properties.Property_Address;
-var Company_No = e.features[0].properties.Company_No;
-var Category = e.features[0].properties.Category;
-var geocoded_address = e.features[0].properties.geocoded_address;
-var geocode_type = e.features[0].properties.geocode_type;
+        break;
+      default:
+        console.log('unknown layer selected');
+    } 
+  } else {
+    if (map.getLayer(layerName)) map.removeLayer(layerName);
+  }
+}
 
 
-
-var description = '<p><b>' + Title + '</b></p>' +
-'<p> Tenure: ' + Tenure + '</p>' +
-'<p> Property Address: ' + Property_Address + '</p>' +
-'<p> Company No: ' + Company_No + '</p>' +
-'<p> Category: ' + Category + '</p>' +
-'<p> Geocoded address: ' + geocoded_address + '</p>' +
-'<p> Geocode type: ' + geocode_type + '</p>';
- 
-new maplibregl.Popup()
-.setLngLat(coordinates)
-.setHTML(description)
-.addTo(map);
-});
- 
-// Change the cursor to a pointer when the mouse is over the places layer.
-map.on('mouseenter', 'landowners', function () {
-map.getCanvas().style.cursor = 'pointer';
-});
- 
-// Change it back to a pointer when it leaves.
-map.on('mouseleave', 'landowners', function () {
-map.getCanvas().style.cursor = '';
-});
 
 </script>
 <!-- map -->
