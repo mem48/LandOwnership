@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="content-type" content="text/html">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="Description" content="Land ownership in England and Wales">
+
+<!-- Set Up Mapbox -->
+<script src='https://unpkg.com/maplibre-gl@2.1.9/dist/maplibre-gl.js'></script>
+<link href='https://unpkg.com/maplibre-gl@2.1.9/dist/maplibre-gl.css' rel='stylesheet' />
+
+
+</head>
+<body>
+
+<!-- map -->
+<div id="map" class="map">
+<script type="text/javascript">
+    // Setup Map
+var map = new maplibregl.Map({
+		container: 'map',
+		style: 'web/style_light.json',
+		center: [0, 52], 
+		zoom: 6,
+		maxZoom: 16,
+    minZoom: 4
+		});
+
+
+// Add controls to the map.
+map.addControl(new maplibregl.NavigationControl());
+map.addControl(new maplibregl.AttributionControl({
+customAttribution: 'Contains OS data © Crown copyright 2022'
+}));
+map.addControl(new maplibregl.GeolocateControl({
+positionOptions: {
+enableHighAccuracy: true
+},
+trackUserLocation: true
+})
+,'top-right');
+map.addControl(new maplibregl.ScaleControl({
+  maxWidth: 80,
+  unit: 'metric'
+}),'bottom-right');
+    
+    
+</script>
+</div>
+
+</body>
+</html>
