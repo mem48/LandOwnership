@@ -144,7 +144,7 @@ var description = '<p><b>' + Title + '</b></p>' +
 '<p> Geocoded address: ' + geocoded_address + '</p>' +
 '<p> Geocode type: ' + geocode_type + '</p>';
  
-new mapboxgl.Popup()
+new maplibregl.Popup()
 .setLngLat(coordinates)
 .setHTML(description)
 .addTo(map);
