@@ -10,13 +10,19 @@
 <script src='https://unpkg.com/maplibre-gl@2.1.9/dist/maplibre-gl.js'></script>
 <link href='https://unpkg.com/maplibre-gl@2.1.9/dist/maplibre-gl.css' rel='stylesheet' />
 
+<style>
+table, th, td {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+</style>
 
 </head>
 <body>
   
 <!-- layer select -->
-<div>
-  <p><label><input type="checkbox" id="insiprecheckbox" value="true" onclick="toggleLayer('inspire')" checked>Inspire Polygons</label></p>
+<div style="position: absolute; top: 10px; left: 10px; z-index: 9; opacity: 0.8; background-color: #EBEBEB;">
+  <p><label><input type="checkbox" id="inspirecheckbox" value="true" onclick="toggleLayer('inspire')" checked>Inspire Polygons</label></p>
   <p><label><input type="checkbox" id="landownerscheckbox" value="true" onclick="toggleLayer('landowners')" checked>Owner Points</label></p>
 </div>
 
@@ -70,7 +76,8 @@ map.addSource('landowners', {
 	'maxzoom': 16
 });
 
-
+toggleLayer('landowners');
+toggleLayer('inspire');
 
 
 
@@ -217,12 +224,10 @@ function toggleLayer(layerName){
   }
 }
 
-
-
 </script>
 <!-- map -->
 </div>
-<h1>Interactive map of the Land Registry Inspire Polygons</h1>
+<h1>Interactive map of Land Registry data</h1>
 
 <p>This map is intended to help people understand land ownership in England and Wales. It maps data published by the Land Registry. For code and more information on data and methods see the <a href="https://github.com/mem48/LandOwnership/">GitHub repo</a>.</p>
 
