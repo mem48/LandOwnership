@@ -31,5 +31,16 @@ Once the polygons have been cleaned and duplicates have been removed each Local 
 
 I then built these into a tileset. As showing all the polygons in the country is not possible even for Vector Tiles I chose just to map the large polygons when zoomed out and then add in smaller polygons the closer in you zoom.
 
+<img src='images/zoomedout.jpg'/>
+<figcaption align = "center">
+<b>When zoomed out only the largest polygons are shown</b>
+</figcaption>
 
+
+<figure>
+<img src='images/zoomedin.jpg'/>
+<figcaption align = "center">
+<b>Zoom in a little and you can see all the polygons</b>
+</figcaption>
+</figure>
 
