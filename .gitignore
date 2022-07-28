@@ -3,3 +3,6 @@
 *.csv
 .Rhistory
 .Rproj.user/*
+*.pbf
+data/tilegeojson/uk_owners.geojson
+README.html
