@@ -76,7 +76,7 @@ map.addSource('landowners', {
 
 });
 
-// Click on Transit transitstops
+// Click on landowners
 map.on('click', 'landowners', function (e) {
 var coordinates = e.features[0].geometry.coordinates.slice();
 var Title = e.features[0].properties.Title;
@@ -86,17 +86,39 @@ var Company_No = e.features[0].properties.Company_No;
 var Category = e.features[0].properties.Category;
 var geocoded_address = e.features[0].properties.geocoded_address;
 var geocode_type = e.features[0].properties.geocode_type;
+var Proprietor = e.features[0].properties.Proprietor;
 
 
-
-var description = '<p><b>' + Title + '</b></p>' +
+var description = '<p> Title No: ' + Title + '</p>' +
+'<p> Proprietor: ' + Proprietor + '</p>' +
 '<p> Tenure: ' + Tenure + '</p>' +
-'<p> Property Address: ' + Property_Address + '</p>' +
 '<p> Company No: ' + Company_No + '</p>' +
 '<p> Category: ' + Category + '</p>' +
+'<p> Property Address: ' + Property_Address + '</p>' +
 '<p> Geocoded address: ' + geocoded_address + '</p>' +
 '<p> Geocode type: ' + geocode_type + '</p>';
  
+
+new maplibregl.Popup()
+.setLngLat(coordinates)
+.setHTML(description)
+.addTo(map);
+});
+
+
+// Click on inspire
+map.on('click', 'inspire', function (e) {
+var coordinates = e.features[0].geometry.coordinates.slice();
+var INSPIREID = e.features[0].properties.INSPIREID;
+var local_authority = e.features[0].properties.local_authority;
+var area = e.features[0].properties.area;
+
+var description = '<p> Title No: ' + Title + '</p>' +
+'<p> INSPIRE ID: ' + INSPIREID + '</p>' +
+'<p> Local Authority: ' + local_authority + '</p>' +
+'<p> Area: ' + area + '</p>';
+ 
+
 new maplibregl.Popup()
 .setLngLat(coordinates)
 .setHTML(description)
@@ -112,6 +134,17 @@ map.getCanvas().style.cursor = 'pointer';
 map.on('mouseleave', 'landowners', function () {
 map.getCanvas().style.cursor = '';
 });
+
+// Change the cursor to a pointer when the mouse is over the places layer.
+map.on('mouseenter', 'inspire', function () {
+map.getCanvas().style.cursor = 'pointer';
+});
+ 
+// Change it back to a pointer when it leaves.
+map.on('mouseleave', 'inspire', function () {
+map.getCanvas().style.cursor = '';
+});
+
 
 function toggleLayer(layerName){
   var checkBox = document.getElementById(layerName.concat('checkbox'));
@@ -191,7 +224,57 @@ function toggleLayer(layerName){
 </div>
 <h1>Interactive map of the Land Registry Inspire Polygons</h1>
 
+<p>This map is intended to help people understand land ownership in England and Wales. It maps data published by the Land Registry. For code and more information on data and methods see the <a href="https://github.com/mem48/LandOwnership/">GitHub repo</a>.</p>
 
+The map shows two types of data:
+
+<h2>Inspire Polygons</h2>
+<p>The Inspire polygons show the boundaries of freehold land registered with the Land Registry. Not all land ownership is registered with the Land Registry, so the map has some gaps. Also, due to the size of the dataset, we can't map all the polygons when zoomed out. To see the full dataset, zoom in.</p>
+
+<h2>Ownership Points</h2>
+<p>The Land Registry does not publish data on who owns every piece of land in England and Wales, but they do publish data on some types of organisations. Specifically UK and overseas companies that own land. This map shows the point locations of these properties. Click on a point for more information:</p>
+
+<p>
+ <table>
+  <tr>
+    <th>Variaible</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>Title</td>
+    <td>The title number</td>
+  </tr>
+  <tr>
+    <td>Proprietor</td>
+    <td>The name of the company that owns the property, in some cases, there is more than one proprietor, but we only show the first name.</td>
+  </tr>
+  <tr>
+    <td>Tenure</td>
+    <td>Is the land freehold or leasehold</td>
+  </tr>
+  <tr>
+    <td>Company No</td>
+    <td>The company number</td>
+  </tr>
+  <tr>
+    <td>Category</td>
+    <td>The type of comapny</td>
+  </tr>
+  <tr>
+    <td>Property Address</td>
+    <td>The address registered with the Land Registry; this may be multiple addresses per title</td>
+  </tr>
+  <tr>
+    <td>Geocoded address</td>
+    <td>The address that was used to locate the point. This should be the same as the Property Address but may differ if the title included multiple addresses or if the geocoder has misinterpreted the address</td>
+  </tr>
+  <tr>
+    <td>Geocode type</td>
+    <td>What has the geocoder found, usually an Address but may be a road or postcode if the geocoder was unable to find a good match.</td>
+  </tr>
+
+</table> 
+</p>
 
 <h2>Copyright Notice</h2>
 <p>This information is subject to Crown copyright and database rights 2022 and is reproduced with the <a href="https://use-land-property-data.service.gov.uk/datasets/inspire#conditions">permission of HM Land Registry</a>.</p>
