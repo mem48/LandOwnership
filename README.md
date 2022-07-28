@@ -18,7 +18,7 @@ So the first task was to build a modern vector tile set for Inspire polygons. I 
 Land registry maps are often digitised versions of old paper maps, because of this they are often split into grids where a property crossed the boundary of one paper map to another. I wrote code to detect straight boundaries that align with the 500m grids of the British National Grid and remove them. 
 
 <figure>
-<img src='images/grid_detection.jpg'/>
+<img src='images/grid_detection.JPG'/>
 <figcaption align = "center">
 <b>Polygons boarders that align with the grid have been detected and highlighted in red.</b>
 </figcaption>
@@ -31,14 +31,14 @@ Once the polygons have been cleaned and duplicates have been removed each Local 
 
 I then built these into a tileset. As showing all the polygons in the country is not possible even for Vector Tiles I chose just to map the large polygons when zoomed out and then add in smaller polygons the closer in you zoom.
 
-<img src='images/zoomedout.jpg'/>
+<img src='images/zoomedout.JPG'/>
 <figcaption align = "center">
 <b>When zoomed out only the largest polygons are shown</b>
 </figcaption>
 
 
 <figure>
-<img src='images/zoomedin.jpg'/>
+<img src='images/zoomedin.JPG'/>
 <figcaption align = "center">
 <b>Zoom in a little and you can see all the polygons</b>
 </figcaption>
