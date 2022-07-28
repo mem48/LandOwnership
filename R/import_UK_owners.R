@@ -98,7 +98,7 @@ freehold_pc_single_short_multinumb$AddressLine <- AddressLine
 freehold_pc_single_short <- rbind(freehold_pc_single_short, freehold_pc_single_short_multinumb)
 
 # save the groups
-saveRDS(freehold_pc_single_short,"data/UK_freehold_pc_single_short.Rds") # 1.7 million
+saveRDS(freehold_pc_single_short,"data/UK_freehold_pc_single_short.Rds") # 1,776,987
 saveRDS(freehold_pc_single_long,"data/UK_freehold_pc_single_long.Rds")# 124,000 spit into 456,337 and 2,316 too complex
 saveRDS(freehold_pc_multi,"data/UK_freehold_pc_multi.Rds") # 9034 split into 168,911
 saveRDS(freehold_pc_land,"data/UK_freehold_pc_land.Rds") # 122,000
