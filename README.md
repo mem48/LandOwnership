@@ -122,14 +122,14 @@ Even so, this will take a while, so I will post some interim results in a few mo
 
 At the moment I'm generating addresses to geocode faster than I can geocode them, but that is going to settle down rapidly. This will be a long-burn project to gradually geocode the addresses and will likely reach diminishing returns and the text strings get more complex to parse. So the rough plan is:
 
-1. Finish the code to parse the "land" categories - Expected to yield 1-2 million more addresses
-2. Run the code over the leasehold UK ownership and the oversees ownership - Perhaps 1 million more addresses
+1. Finish the code to parse the "land" categories - Expected to yield 1-2 million more addresses.
+2. Run the code over the leasehold UK ownership and the oversees ownership - Perhaps 1 million more addresses.
 3. Grind through these addresses with the Bing API probably finished by Christmas 2022.
-4. Update the map with the full set of geocoded addresses
-5. Publish the titles that failed to Geocode
-6. (Optional) attempt to retry the failed addresses with Google. 
+4. Update the map with the full set of geocoded addresses.
+5. Publish the titles that failed to Geocode.
+6. (Optional) attempt to retry the failed addresses with Google.
 
-What I'm not going to do is try and get 100% coverage, I don't have the time. If somebody else what to pick up the much shorter list of un-geocoded titles and come up with a solution that would be great. If not, I will still have improved the public understanding of the data and of who owns land significantly. 
+What I'm not going to do is try and get 100% coverage, I don't have the time. If somebody else wants to pick up the much shorter list of un-geocoded titles and come up with a solution that would be great. If not, I will still have improved the public understanding of the data and of who owns land significantly. 
 
 In principle, it would be possible to match the freehold points to the INSPIRE polygons. But in practice, I think this will be hard and prone to errors where there is ambiguity in the geolocation. For the moment I think the combination of point over the INSPIRE polygons is good enough to help people understand the extent of a land holding.
 
@@ -141,7 +141,8 @@ In principle, it would be possible to match the freehold points to the INSPIRE p
 </figure>
 
   <br />
-If you do want to check that the point and the polygon match, you can click on the polygon to get the INSPIRE ID, search for it on [the goverment website](https://search-property-information.service.gov.uk/search/search-by-inspire-id) and the property description should match the property address given for the point.
+  
+If you do want to check that the point and the polygon match, you can click on the polygon to get the INSPIRE ID, search for it on [the goverment website](https://search-property-information.service.gov.uk/search/search-by-inspire-id) and the property description should match the property address given for the point. I tested this for a few locations and it seems to work. Obviously once the less precise geocodes are added the correct polygon will be near the point rather than exactly under it.
 
 
 ## A few legal thoughts
