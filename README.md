@@ -50,9 +50,9 @@ I then built these into a tileset. As showing all the polygons in the country is
 
   <br />
   
-You can also click on the polygons so see the INSPIRE ID which can be used to [purchase the full title](https://search-property-information.service.gov.uk/search/search-by-inspire-id) the Local Authority name and the area in square metres. Due to an oversight on my part the area is given to 13 decimal places, I'll fixe this in a future version.
+You can also click on the polygons so see the INSPIRE ID which can be used to [purchase the full title](https://search-property-information.service.gov.uk/search/search-by-inspire-id) the Local Authority name and the area in square metres. Due to an oversight on my part the area is given to 13 decimal places, I'll fix this in a future version.
 
-Also as I have merged some polygons, some INSPIRE IDs are missing. For merged polygons they have been given on of the INSPIRE IDs from the unmerged polygons, but which one they get is essentailly random. 
+Also as I have merged some polygons, some INSPIRE IDs are missing. For merged polygons they have been given on of the INSPIRE IDs from the unmerged polygons, but which one they get is essentially random. 
 
 ## Geocoding the UK and Oversees ownership data
 
