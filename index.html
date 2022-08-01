@@ -115,7 +115,7 @@ new maplibregl.Popup()
 
 // Click on inspire
 map.on('click', 'inspire', function (e) {
-var coordinates = e.features[0].geometry.coordinates.slice();
+var coordinates = e.lngLat;
 var INSPIREID = e.features[0].properties.INSPIREID;
 var local_authority = e.features[0].properties.local_authority;
 var area = e.features[0].properties.area;
