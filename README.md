@@ -67,7 +67,7 @@ But there are a few limitations to her implementation.
 
 So we can do much better.
 
-This is in no way criticism of Shrubsole and Powell-Smith's excellent work. But I suspect it is a simply case of the limited resources available to them. In contrast, academics get privileged access to data and resources, which sometimes go unused. In this case, I have an enterprise-grade workstation that is usually off on evenings and weekends. So I throw vastly more compute power at the problem for essentially zero cost.  Also, I love this kind of data wrangling puzzle, so I'm happy to spend some of my free time on it.
+This is in no way criticism of Shrubsole and Powell-Smith's excellent work. But I suspect it is a simply case of the limited resources available to them. In contrast, academics get privileged access to data and resources, which sometimes go unused. In this case, I have an enterprise-grade workstation that is usually off on evenings and weekends. So I can throw vastly more compute power at the problem for essentially zero cost.  Also, I love this kind of data wrangling puzzle, so I'm happy to spend some of my free time on it.
 
 ### Challenges in Geocoding
 
