@@ -3,6 +3,7 @@ library(combinat)
 library(dplyr)
 library(stringr)
 library(furrr)
+library(stringr)
 
 source("R/address_functions.R")
 freehold_pc_land = readRDS("data/UK_freehold_pc_land.Rds")
@@ -85,13 +86,6 @@ summary(res_clean_land$andLand)
 res_clean_land_andland <- res_clean_land[res_clean_land$andLand,]
 res_clean_land <- res_clean_land[!res_clean_land$andLand,]
 
-# Produce possible introductions
-compas = c("north","east","south","west",
-           "northern","eastern","southern","western",
-           "north east","south east","north west","south west",
-           "northeast","southeast","northwest","southwest",
-           "north-east","south-east","north-west","south-west")
-
 # Common land phrases
 # land adjoining
 # land lying to the south of
@@ -108,20 +102,106 @@ compas = c("north","east","south","west",
 # land fronting on
 # ...  and land at the rear 
 
-#lnd = c("freehold land ","land ") # deal with freehold later
-lnd = c("land ","land and buildings ","land and building ")
+# Clean compas directions
+freehold_pc_land$`Property Address` <- gsub("northern","north",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("southern","south",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("eastern","east",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("western","west",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+
+freehold_pc_land$`Property Address` <- gsub("northly","north",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("southernly","south",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("easterly","east",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("westerly","west",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+
+freehold_pc_land$`Property Address` <- gsub("north-east","northeast",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("south-east","southeast",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("north-west","northwest",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("south-west","southwest",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+
+freehold_pc_land$`Property Address` <- gsub("north east","northeast",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("south east","southeast",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("north west","northwest",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("south west","southwest",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+
+# Clean spelling errors
+freehold_pc_land$`Property Address` <- gsub("\\badjoing\\b","adjoining",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("\\badjoingin\\b","adjoining",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("\\badjoinining\\b","adjoining",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("\\bADJOINNG\\b","adjoining",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("\\badjoning\\b","adjoining",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("\\bajoining\\b","adjoining",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+
+# Some have text after the postcode, and removing poscoe reduce string length
+postcode <- str_extract_all(freehold_pc_land$`Property Address`, postcode_rx)
+
+postcode[lengths(postcode) == 0] <- NA
+summary(lengths(postcode))
+postcode <- unlist(postcode)
+summary(postcode == freehold_pc_land$PostalCode)
+
+pa <- str_split(freehold_pc_land$`Property Address`, postcode_rx)
+summary(lengths(pa))
+pa1 <- sapply(pa,`[[`, 1)
+pa2 <- sapply(pa[lengths(pa) == 2],`[[`, 2)
+unique(pa2)
+
+freehold_pc_land$`Property Address` <- pa1
+
+# Produce possible introductions
+compas = c("north","east","south","west",
+           "northeast","southeast","northwest","southwest",
+           "front","back")
+
+compas2 = expand.grid(compas, compas)
+compas2 = compas2[compas2$Var1 != compas2$Var2,]
+
+compas <- c(compas, paste0(compas2$Var1," and ",compas2$Var2), paste0(compas2$Var1," side and ",compas2$Var2))
+
+
+lnd = c("land ","land and buildings ","land and building ","land an buildings ",
+        "garden land ","front garden land ",
+        "land and buildings at the back of and ", "land at Access Road ",
+        "being land and buildings ","forming part of the ",
+        "Land and Apartments ","land and Apartment Block ","",
+        "land and barn ","land and barns ",
+        "land and flats ","land and garage ","land and garages ",
+        "Land and premises ","land and properties ")
 # Identify the type of land description
 # Idea one identified can be removed to get geocodeable address
 
-jn1 = c("lying to the ","lying on the ","lying to the back ","lying to the read ",
-        "on the ","to the ","on ")
-jn2 = c("at the back ","at the rear ","at rear ","to the rear of",
-        "associated with ", "at ","in ","known as ","formerly known as ",
-        "being the former site of ",
-        "at the side of ","adjoining ","adjacent to",
-        "fronting on ","fronting ","in the front ","in front ",
-        "forming part ","comprising part ")
-end = c("of ","side of","",",")
+jn1 = c("lying to the ","lying on the ","lying to the back ","lying to the read ","lying to ",
+        "on the ","to the ","on ","adjoining on the ","adjoining the ","at the ","adjoining ",
+        "fronting to the ")
+jn2 = c("at the back ","at back ","at the rear ","at rear ","to the rear of",
+        "at the back and side ","at the rear and side ",
+        "lying to the back ", "lying to the rear ",
+        "associated with ","association with ",
+        "at ","at, ","in ","and ","","of ", "of the ","off ",
+        "known as ","formerly known as ",
+        "being the former site of ","being part ",
+        "comprising plots ","comprising ",
+        "at the side of ","adjoining ","adjoining","adjoining on the ",
+        "adjoining at the back ","adjoining the back and south east side ",
+        "adjoining the front ",
+        "adjacent to",
+        "at the front ","fronting on ","fronting ","in the front ","in front ","the front ","at front ",
+        "at the front of and garage at the back ",
+        "at the front and side ",
+        "the front and back ","at the front and back ","front garden ","the roadway in front ",
+        "forming part ","comprising part ",
+        "forming part of the highway fronting ",
+        "forming part of the highway at the back ",
+        "forming part of the highway and lying to the front ",
+        "forming part of the roadway in front ",
+        "forming part of the road at the back ",
+        "forming part of the site ",
+        "forming part of the nature area at the back ",
+        "forming part of the garden at the back ",
+        "at the front of and parking areas at the back ",
+        "part of ",
+        "numbered ")
+end = c("of ","side ","side of ","side and back of ","side of and at the back of ","",",","and back of ","and at the back of ",
+        "and West sides of and at the back of ","side and at the back of ")
 
 perms = expand.grid(lnd, jn1, paste0(compas," "),end)
 perms = paste0(perms$Var1, perms$Var2, perms$Var3, perms$Var4)
@@ -129,52 +209,41 @@ perms = paste0(perms$Var1, perms$Var2, perms$Var3, perms$Var4)
 perms2 = expand.grid(lnd, jn2, end)
 perms2 = paste0(perms2$Var1, perms2$Var2, perms2$Var3)
 
-perms = c(perms, perms2)
+perms_all = c(perms, perms2)
+perms_all = unique(perms_all)
+perms_all = perms_all[perms_all != ""]
 
-check_match <- function(x, perms){
-  y = vapply(perms, grepl, TRUE, x = x, USE.NAMES = FALSE, ignore.case = TRUE)
-  y = perms[y]
-  ly = length(y)
-  
-  if(ly == 0){
-    return(NA_character_)
-  }
-  if(ly == 1){
-    return(y)
-  }
-  
-  # check for short matches in long matches
-  y = data.frame(y = y)
-  y$nchar <- nchar(y$y)
-  if(length(y[y$nchar == max(y$nchar)]) > 1){
-    y <- paste0(y$y, collapse = "|")
-    return(y)
-  } else {
-    y$sub <- vapply(y$y, grepl, TRUE, x = y$y[y$nchar == max(y$nchar)], USE.NAMES = FALSE, ignore.case = TRUE)
-    y <- y$y[!y$sub | y$nchar == max(y$nchar)]
-  }
-  
-  if(length(y) > 1){
-    y <- paste0(y, collapse = "|")
-  }
-  y
-}
-
-plan(multisession, workers = 18)
-freehold_pc_land$land_type = future_map_chr(freehold_pc_land$`Property Address`, check_match, perms = perms, .progress = TRUE)
+message(Sys.time()) # 18:52
+plan(multisession, workers = 28)
+freehold_pc_land$land_type = future_map_chr(freehold_pc_land$`Property Address`, check_match2, perms = perms_all, .progress = TRUE)
 plan(sequential)
+message(Sys.time())
 
 # bar <- as.data.frame(table(freehold_pc_land$land_type))
 summary(is.na(freehold_pc_land$land_type))
 
 freehold_pc_land$land_type_multi <- grepl("|",freehold_pc_land$land_type, fixed = TRUE) 
 
-freehold_pc_land_complex <- freehold_pc_land[is.na(freehold_pc_land$land_type) | freehold_pc_land$land_type_multi,]
-freehold_pc_land <- freehold_pc_land[!is.na(freehold_pc_land$land_type),]
+freehold_pc_land_complex <- freehold_pc_land[is.na(freehold_pc_land$land_type) | 
+                                               freehold_pc_land$land_type_multi,]
+freehold_pc_land_simple <- freehold_pc_land[!is.na(freehold_pc_land$land_type) & 
+  !freehold_pc_land$land_type_multi,]
 
 
-freehold_pc_land$AddressLine  <- map2_chr(.x = freehold_pc_land$land_type, 
-                                          .y = freehold_pc_land$`Property Address`, 
+freehold_pc_land_simple$AddressLine  <- map2_chr(.x = freehold_pc_land_simple$land_type, 
+                                          .y = freehold_pc_land_simple$`Property Address`, 
                                           .f = gsub, replacement = "", ignore.case = TRUE)
 
+
 # TODO: nearly there clean up, split addresses, and send for geocoding
+foo = freehold_pc_land_simple$AddressLine[grepl("\\bside\\b",freehold_pc_land_simple$AddressLine, ignore.case = FALSE)]
+# A few left  but into diminishing returns
+
+# Clena out trailing (
+freehold_pc_land_simple$AddressLine <- gsub("\\($","",freehold_pc_land_simple$AddressLine,)
+
+# Most of these are Land near address so one point per title make more sence
+freehold_pc_land_simple$AddressLine <- map_chr(freehold_pc_land_simple$AddressLine, clean_numbers)
+
+
+
