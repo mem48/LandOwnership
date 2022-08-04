@@ -309,3 +309,46 @@ split_numbers_try <- function(x){
     return(r)
   }
 }
+
+
+check_match <- function(x, perms, startonly = TRUE){
+  
+  if(startonly){
+    perms = paste0("^",perms)
+  }
+  
+  y = vapply(perms, grepl, TRUE, x = x, USE.NAMES = FALSE, ignore.case = TRUE)
+  y = perms[y]
+  ly = length(y)
+  
+  if(ly == 0){
+    return(NA_character_)
+  }
+  if(ly == 1){
+    if(startonly){
+      y = substr(y,2,nchar(y))
+    }
+    return(y)
+  }
+  
+  if(startonly){
+    y = substr(y,2,nchar(y))
+  }
+  
+  # check for short matches in long matches
+  y = data.frame(y = y)
+  y$nchar <- nchar(y$y)
+  if(length(y[y$nchar == max(y$nchar)]) > 1){
+    y <- paste0(y$y, collapse = "|")
+    return(y)
+  } else {
+    y$sub <- vapply(y$y, grepl, TRUE, x = y$y[y$nchar == max(y$nchar)], USE.NAMES = FALSE, ignore.case = TRUE)
+    y <- y$y[!y$sub | y$nchar == max(y$nchar)]
+  }
+  
+  if(length(y) > 1){
+    y <- paste0(y, collapse = "|")
+  }
+  y
+}
+
