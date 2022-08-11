@@ -29,6 +29,7 @@ clean_numbers <- function(x, withbrakets = TRUE){
     # Remove any other words
     y <- gsub("\\(inclusive\\)","",y, ignore.case = TRUE)
     y <- gsub("\\(inc\\)","",y, ignore.case = TRUE)
+    y <- gsub("\\(all\\)","",y, ignore.case = TRUE)
     y <- gsub("\\(odd\\)","",y, ignore.case = TRUE)
     y <- gsub("\\(odd nos \\)","",y, ignore.case = TRUE)
     y <- gsub("\\(odd numbers\\)","",y, ignore.case = TRUE)
@@ -184,6 +185,7 @@ split_numbers <- function(x){
   
   x <- gsub("\\(inclusive\\)","(INC)",x, ignore.case = TRUE)
   x <- gsub("\\(inc\\)","(INC)",x, ignore.case = TRUE)
+  x <- gsub("\\(all\\)","(INC)",x, ignore.case = TRUE)
   
   x <- gsub("\\(odd\\)","(ODD)",x, ignore.case = TRUE)
   x <- gsub("\\(odds\\)","(ODD)",x, ignore.case = TRUE)
@@ -357,9 +359,12 @@ check_match2 <- function(x, perms, startonly = TRUE){
   
   if(startonly){
     perms = paste0("^",perms)
+    y = stringi::stri_detect_regex(x, perms, case_insensitive = TRUE)
+  } else{
+    y = stringi::stri_detect_fixed(x, perms, case_insensitive = TRUE)
   }
   
-  y = stringi::stri_detect_fixed(x, perms, case_insensitive = TRUE)
+  
   y = perms[y]
   ly = length(y)
   

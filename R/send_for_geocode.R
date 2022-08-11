@@ -1,4 +1,4 @@
-# Send a fiel to be geocoded
+# Send a file to be geocoded
 library(sf)
 library(tmap)
 source("R/bing_api.R")

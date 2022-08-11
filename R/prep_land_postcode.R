@@ -71,20 +71,23 @@ res_clean_land <- res_clean[res_clean$land,]
 res_clean <- res_clean[!res_clean$land,]
 
 # Some places are  address" and land  "
+#TODO: and  the land and buildings at the rear
+andland_regex = "\\band (other )?(adjoining )?(adjacent )?(surrounding )?(amenity )?(associated )?(garden )?land\\b"
 
-freehold_pc_land$andLand <- grepl("\\band (other )?(adjoining )?(adjacent )?(surrounding )?(associated )?(garden )?land\\b", 
+freehold_pc_land$andLand <- grepl(andland_regex, 
                                   freehold_pc_land$`Property Address`, ignore.case = TRUE)
 summary(freehold_pc_land$andLand)
 
 freehold_pc_land_andland <- freehold_pc_land[freehold_pc_land$andLand,]
 freehold_pc_land <- freehold_pc_land[!freehold_pc_land$andLand,]
 
-res_clean_land$andLand <- grepl("\\band (other )?(adjoining )?(adjoining )?(surrounding )?(associated )?(garden )?land\\b", 
+res_clean_land$andLand <- grepl(andland_regex, 
                                 res_clean_land$AddressLine, ignore.case = TRUE)
 summary(res_clean_land$andLand)
 
 res_clean_land_andland <- res_clean_land[res_clean_land$andLand,]
 res_clean_land <- res_clean_land[!res_clean_land$andLand,]
+
 
 # Common land phrases
 # land adjoining
@@ -143,9 +146,16 @@ pa <- str_split(freehold_pc_land$`Property Address`, postcode_rx)
 summary(lengths(pa))
 pa1 <- sapply(pa,`[[`, 1)
 pa2 <- sapply(pa[lengths(pa) == 2],`[[`, 2)
-unique(pa2)
+#unique(pa2)
+pa2 <- pa2
 
 freehold_pc_land$`Property Address` <- pa1
+
+freehold_pc_land$land <- grepl("\\bland\\b",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+
+freehold_pc_land_notland <- freehold_pc_land[!freehold_pc_land$land,]
+freehold_pc_land <- freehold_pc_land[freehold_pc_land$land,]
+
 
 # Produce possible introductions
 compas = c("north","east","south","west",
@@ -158,14 +168,21 @@ compas2 = compas2[compas2$Var1 != compas2$Var2,]
 compas <- c(compas, paste0(compas2$Var1," and ",compas2$Var2), paste0(compas2$Var1," side and ",compas2$Var2))
 
 
-lnd = c("land ","land and buildings ","land and building ","land an buildings ",
-        "garden land ","front garden land ",
+lnd = c("land ","land and buildings ","land and building ","land an buildings ","the land and buildings ",
+        "garden land ","front garden land ","glebe land ",
         "land and buildings at the back of and ", "land at Access Road ",
         "being land and buildings ","forming part of the ",
         "Land and Apartments ","land and Apartment Block ","",
         "land and barn ","land and barns ",
         "land and flats ","land and garage ","land and garages ",
-        "Land and premises ","land and properties ")
+        "Land and premises ","land and properties ",
+        "the land ","highway land ","amenity land ",
+        "two parcels of land ","three parcels of land ","four parcels of land ",
+        "a strip of land ","strip of land ",
+        "being land ",
+        "all mines minerals and quarries (except stone quarries) under the land shown edged with red on the plan of the above title filed at the Registry and being ",
+        "all mines minerals and quarries (except stone quarries) under the land shown edged with red on the plan of the above title filed at the Registry and being land ",
+        "Mines of Coal Lead Ores Metals and Minerals Rock Salt and Brine Springs under the land shown edged with red on the plan of the above title filed at the Registry and being ")
 # Identify the type of land description
 # Idea one identified can be removed to get geocodeable address
 
@@ -213,9 +230,83 @@ perms_all = c(perms, perms2)
 perms_all = unique(perms_all)
 perms_all = perms_all[perms_all != ""]
 
-message(Sys.time()) # 18:52
-plan(multisession, workers = 28)
-freehold_pc_land$land_type = future_map_chr(freehold_pc_land$`Property Address`, check_match2, perms = perms_all, .progress = TRUE)
+# Not every combinations exists, Check if the perms_all are in the data
+# The longer perms_all is increases the number of checks exponentially
+# So this pre-check if worth it if it is first.
+
+# check_present <- function(x, y){
+#   
+#   int_fun <- function(a, b){
+#     grepl(a, b, ignore.case = TRUE)
+#   }
+#   
+#   for(i in 1:length(y)){
+#     if(int_fun(x, y[i])){
+#       return(TRUE)
+#     }
+#   }
+#   return(FALSE)
+# }
+# 
+# check_present2 <- function(x, y){
+#   purrr::detect(.x = y, .f = grepl, pattern = x, ignore.case = TRUE)
+# }
+# 
+# check_present3 <- function(x, y){
+#   any(grepl(x, y, ignore.case = TRUE))
+# }
+
+check_present4 <- function(x, y){
+  any(stringi::stri_detect_fixed(y, x, max_count = 1, case_insensitive = TRUE))
+}
+
+# f1 = stringi::stri_detect_fixed(freehold_pc_land$`Property Address`, perms_all, max_count = 1, case_insensitive = TRUE)
+# summary(f1)
+# 
+# bench::mark(f1 = any(grepl(perms_all[1], freehold_pc_land$`Property Address`, ignore.case = TRUE)),
+#             f2 = check_present(x = perms_all[1], y = freehold_pc_land$`Property Address`),
+#             f3 = check_present2(x = perms_all[1], y = freehold_pc_land$`Property Address`),
+#             f4 = check_present3(x = perms_all[1], y = freehold_pc_land$`Property Address`),
+#             f5 = stringi::stri_detect_fixed(freehold_pc_land$`Property Address`, perms_all[100], max_count = 1, case_insensitive = TRUE),
+#             check = FALSE)
+# 
+# system.time(f1 <- map_dbl(perms_all[1:1000], check_present3, y = freehold_pc_land$`Property Address`))
+# system.time(f1 <- map_dbl(perms_all[1:1000], check_present4, y = freehold_pc_land$`Property Address`))
+
+# FOr a quick match
+# A tibble: 5 × 13
+# expression      min       median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time              
+# <bch:expr>    <bch:tm>  <bch:tm>     <dbl> <bch:byt>    <dbl> <int> <dbl>   <bch:tm>           
+#   1 f1         106.95ms  107.5ms      9.30     458KB     0        5     0      538ms  
+#   2 f2          906.5µs  969.5µs   1019.          0B     2.37   430     1      422ms 
+#   3 f3           1.05ms    1.1ms    895.          0B     2.37   378     1      422ms 
+#   4 f4         106.38ms  108.6ms      9.19     458KB     0        5     0      544ms 
+#   5 f5          51.72ms   52.2ms     18.2      458KB     0       10     0      549ms
+
+# For a no match
+# A tibble: 5 × 13
+# expression          min   median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time                
+# <bch:expr>     <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl> <int> <dbl>   <bch:tm>          
+#   1 f1         109.36ms 110.05ms     9.07      458KB     0        5     0   551.15ms  
+#   2 f2            2.92s    2.92s     0.342        0B     1.71     1     5      2.92s 
+#   3 f3            3.16s    3.16s     0.317        0B     1.90     1     6      3.16s 
+#   4 f4         112.23ms 114.22ms     8.76      458KB     0        5     0   570.82ms 
+#   5 f5          51.53ms  52.21ms    19.0       458KB     0       10     0   526.81ms
+# My methos is fastest when there is a match but really so slow when no match
+# Stringi is 52 ms regardless - which is odd
+
+
+message(Sys.time()) # Take about 50 minutes
+plan(multisession, workers = 30)
+perms_all_real = future_map_lgl(perms_all, check_present4, y = freehold_pc_land$`Property Address`, .progress = TRUE)
+plan(sequential)
+message(Sys.time())
+
+perms_sub = perms_all[perms_all_real]
+
+message(Sys.time()) # Takes bout 5 minutes
+plan(multisession, workers = 30)
+freehold_pc_land$land_type = future_map_chr(freehold_pc_land$`Property Address`, check_match2, perms = perms_sub, .progress = TRUE)
 plan(sequential)
 message(Sys.time())
 
@@ -236,14 +327,76 @@ freehold_pc_land_simple$AddressLine  <- map2_chr(.x = freehold_pc_land_simple$la
 
 
 # TODO: nearly there clean up, split addresses, and send for geocoding
-foo = freehold_pc_land_simple$AddressLine[grepl("\\bside\\b",freehold_pc_land_simple$AddressLine, ignore.case = FALSE)]
+#foo = freehold_pc_land_simple$AddressLine[grepl("\\bside\\b",freehold_pc_land_simple$AddressLine, ignore.case = FALSE)]
 # A few left  but into diminishing returns
 
 # Clena out trailing (
 freehold_pc_land_simple$AddressLine <- gsub("\\($","",freehold_pc_land_simple$AddressLine,)
-
+freehold_pc_land_simple$n_numbers <- stringi::stri_count_regex(freehold_pc_land_simple$AddressLine, '\\d+')
 # Most of these are Land near address so one point per title make more sence
-freehold_pc_land_simple$AddressLine <- map_chr(freehold_pc_land_simple$AddressLine, clean_numbers)
+# But some are multiple addresses
+# So split
+
+freehold_pc_land_simple_multinumb <- freehold_pc_land_simple[freehold_pc_land_simple$n_numbers > 1,]
+freehold_pc_land_simple <- freehold_pc_land_simple[freehold_pc_land_simple$n_numbers <= 1,]
 
 
 
+freehold_pc_land_simple_multinumb$tosplit <- !grepl(" (side)?(front)?(back)?(rear)?(north)?(south)?(east)?(west)?(adjoining)? ", 
+                                                    freehold_pc_land_simple_multinumb$land_type, ignore.case = TRUE)
+summary(freehold_pc_land_simple_multinumb$tosplit)
+
+freehold_pc_land_simple_multinumb_split <- freehold_pc_land_simple_multinumb[freehold_pc_land_simple_multinumb$tosplit, ]
+freehold_pc_land_simple_multinumb_nosplit <- freehold_pc_land_simple_multinumb[!freehold_pc_land_simple_multinumb$tosplit, ]
+
+# Part 1
+freehold_pc_land_simple_multinumb_nosplit$AddressLine <- map_chr(freehold_pc_land_simple_multinumb_nosplit$AddressLine, clean_numbers)
+
+# Part 2
+AddressLine <- map(freehold_pc_land_simple_multinumb_split$AddressLine, split_numbers_try)
+reps <- lengths(AddressLine)
+AddressLine <- unlist(AddressLine)
+freehold_pc_land_simple_multinumb_split <- freehold_pc_land_simple_multinumb_split[rep(1:nrow(freehold_pc_land_simple_multinumb_split), times = reps),]
+freehold_pc_land_simple_multinumb_split$AddressLine <- AddressLine
+
+# Part 3
+#freehold_pc_land_simple$AddressLine <- map_chr(freehold_pc_land_simple$AddressLine, clean_numbers)
+
+#Part 4
+# DOn't knwo what to do with these
+#freehold_pc_land_complex
+
+# Part 5
+#freehold_pc_land_andland
+p1 = c("","and ")
+p2 = c("land ")
+p3 = c("","and buildings ","and building ")
+p4 = c("","at the back ","at the rear ","at the side ","adjoining ")
+p5 = c("","of ")
+
+perms = expand.grid(p1,p2,p3,p4,p5)
+perms = paste0(perms$Var1, perms$Var2, perms$Var3, perms$Var4, perms$Var5)
+perms = unique(perms)
+
+stop("To Do Idetify all the perms of this df")
+
+message(Sys.time()) # Takes bout 1 minutes
+plan(multisession, workers = 30)
+freehold_pc_land_andland$land_type = future_map_chr(freehold_pc_land_andland$`Property Address`, check_match2, perms = perms, .progress = TRUE, startonly = FALSE)
+plan(sequential)
+message(Sys.time())
+summary(is.na(freehold_pc_land_andland$land_type))
+
+
+AddressLine <- map(freehold_pc_land_andland$AddressLine, split_numbers_try)
+reps <- lengths(AddressLine)
+AddressLine <- unlist(AddressLine)
+freehold_pc_land_andland <- freehold_pc_land_andland[rep(1:nrow(freehold_pc_land_andland), times = reps),]
+freehold_pc_land_andland$AddressLine <- AddressLine
+
+
+
+#  Part 6
+res_clean_land_andland
+res_clean_land
+res_clean
