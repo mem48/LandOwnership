@@ -42,3 +42,4 @@ vignettes/*.pdf
 README.html
 *.pbf
 data/tilegeojson/uk_owners.geojson
+data/tilegeojson/landowners/metadata.json
