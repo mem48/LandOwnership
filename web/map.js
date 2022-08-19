@@ -197,8 +197,15 @@ function switchLayer(layer) {
               "circle-color": [
           			'match',
           			['get', 'geocode_type'],
-          			'Address','#a6cee3',
-                'RoadBlock','#1f78b4',
+          			'Address','#4daf4a',
+                'AdminDivision1','#bd0026',
+                'AdminDivision2','#f03b20',
+                'AdminDivision3','#fd8d3c',
+                'CountryRegion','#fecc5c',
+                'PopulatedPlace','#ffffb2',
+                'Postcode1','#377eb8',
+                'RoadBlock','#e41a1c',
+                'RoadIntersection','#f781bf',
           			/* other */ '#e0e0e0'
           			]
             }
