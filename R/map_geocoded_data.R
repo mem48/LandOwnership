@@ -4,10 +4,12 @@ library(tmap)
 tmap_mode("view")
 
 dat = readRDS("data/bing_final/bing_geocoded_good.Rds")
+datm = readRDS("data/bing_final/bing_geocoded_medium.Rds")
 
+dat = rbind(dat, datm)
 
 source("R/find_onedrive.R")
-source("R/address_functions.R")
+#source("R/address_functions.R")
 onedrive <- find_onedrive()
 
 dir.create("tmp")
@@ -29,7 +31,7 @@ dat = dat[,c("Title.Number",
 names(dat) <- c("Title","geocoded_address","geocode_type","geometry")
 
 dat2 = left_join(dat, lr, by = "Title")
-qtm(dat2[1:100,])
+qtm(dat2[sample(1:nrow(dat), 1000),])
 
 st_write(dat2,"data/tilegeojson/uk_owners.geojson", delete_dsn = TRUE)
 

@@ -35,12 +35,13 @@ bounds <- st_transform(bounds, 4326)
 res$check_id <- 1:nrow(res)
 
 res_good <- res[bounds,]
-res_good <- res_good[res_good$entityType == "Address",]
-res_good <- res_good[res_good$confidence == "High",]
+res_medium <- res_good[!(res_good$entityType == "Address" &  res_good$confidence == "High"),]
+res_good <- res_good[(res_good$entityType == "Address" &  res_good$confidence == "High"),]
+res_medium <- res_medium[res_medium$confidence != "Low",]
 
-res_medium <- res[bounds,]
-res_medium <- res_medium[res_medium$entityType == "Address",]
-res_medium <- res_medium[res_medium$confidence == "Medium",]
+# tm_shape(res_medium[1:1000,])+
+#   tm_dots(col = "confidence", popup.vars = names(res_medium)[1:19])
+
 
 # Medium ones are mixed bag of good and bad
 summary(res_good$postalCode.x == res_good$postalCode.y)
