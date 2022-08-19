@@ -49,7 +49,7 @@
   action="https://script.google.com/macros/s/AKfycbxNzqg-ewbcHJCqRNgzPPWhCyPXZAdlTNVpepVN6o59oKRTqKj3n-8WR7oG50_CQYOT/exec"
 target="dummyframe">
   <label for="Name">Full name </label>
-  <input name="Name" type="text" placeholder="Full name" required><br>
+  <input id="namebox" name="Name" type="text" placeholder="Full name" required><br>
   <label for="Consent">I agree to the terms of use for this site (see below): </label>
   <input id= "Consentcheckbox" name="Consent" type="checkbox" required><br>
   <label for="Cookies">I agree to the use of Google Analytics cookies: </label>
@@ -82,14 +82,15 @@ function closewelcome() {
   var x = document.getElementById("welcome");
   var checkBox1 = document.getElementById("Consentcheckbox");
   var checkBox2 = document.getElementById("Cookiescheckbox");
-  if(checkBox1.checked === true & checkBox2.checked === true){
+  var namebox = document.getElementById("namebox");
+  if(checkBox1.checked === true & checkBox2.checked === true & namebox.value.length != 0){
     if (x.style.display === "none") {
       x.style.display = "block";
     } else {
       x.style.display = "none";
     }
   } else {
-    alert("You can't view the map until you agree the terms")
+    alert("You can't view the map until you complete the form")
   }
   
   
@@ -115,7 +116,7 @@ The map shows two types of data:
 <p>The Inspire polygons show the boundaries of freehold land registered with the Land Registry. Not all land ownership is registered with the Land Registry, so the map has some gaps. Also, due to the size of the dataset, we can't map all the polygons when zoomed out. When zoomed out, you will only see polygons greater than 100 acres; at medium zooms, only polygons greater than 10 acres. To see the full dataset, zoom in. </p>
 
 <h2>Ownership Points</h2>
-<p>The Land Registry does not publish data on who owns every piece of land in England and Wales. Still, they do publish data on some types of organisations. Specifically UK and overseas companies that own land. This map shows the point locations of these properties. The geocoding is a work in progress, and more data will be added soon.</p> 
+<p>The Land Registry does not publish data on who owns every piece of land in England and Wales.  But they do publish data on UK and overseas companies that own land. This map shows the locations of these properties by parsing the text of the land titles detect and geocode addresses.  This is an imperfect process and the data is unstructured and complex, so there will be errors and missing data. The geocoding is a work in progress, currently about 1.5 million addresses have been mapped and more data will be added soon.</p>
 
 <!-- The Modal -->
 <div id="myModal" class="modal">

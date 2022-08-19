@@ -6,7 +6,8 @@ style: 'mapbox://styles/mapbox/light-v10',
 center: [0, 52], 
 zoom: 6,
 maxZoom: 18,
-minZoom: 6
+minZoom: 6,
+attributionControl: false
 
 });
  
