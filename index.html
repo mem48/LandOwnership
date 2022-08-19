@@ -47,17 +47,17 @@
   <form 
   method="POST" 
   action="https://script.google.com/macros/s/AKfycbxNzqg-ewbcHJCqRNgzPPWhCyPXZAdlTNVpepVN6o59oKRTqKj3n-8WR7oG50_CQYOT/exec"
->
+target="dummyframe">
   <label for="Name">Full name </label>
   <input name="Name" type="text" placeholder="Full name" required><br>
   <label for="Consent">I agree to the terms of use for this site (see below): </label>
-  <input name="Consent" type="checkbox" required><br>
+  <input id= "Consentcheckbox" name="Consent" type="checkbox" required><br>
   <label for="Cookies">I agree to the use of Google Analytics cookies: </label>
-  <input name="Cookies" type="checkbox" required><br>
-  
+  <input id= "Cookiescheckbox" name="Cookies" type="checkbox" required><br>
   <button type="submit" onclick="closewelcome()">Take me to the map</button>
 </form></div>
 
+<iframe name="dummyframe" id="dummyframe" style="display: none;"></iframe>
 
 <h2>Why do you ask for my name?</h2>
 <p>The <a href="https://use-land-property-data.service.gov.uk/datasets/ccod/licence/view">licence</a> for the data published by the Land Registry requires that we <i>"maintain End-User Records ... for the purpose of auditing compliance with the terms of this Licence and/or for the prevention and/or detection of crime"</i>. Therefore we ask for your name and record the time you visited the site. We won't share this data with anybody unless the Land Registry requires us to as part of an audit. </p>
@@ -80,11 +80,19 @@
 <script>
 function closewelcome() {
   var x = document.getElementById("welcome");
-  if (x.style.display === "none") {
-    x.style.display = "block";
+  var checkBox1 = document.getElementById("Consentcheckbox");
+  var checkBox2 = document.getElementById("Cookiescheckbox");
+  if(checkBox1.checked === true & checkBox2.checked === true){
+    if (x.style.display === "none") {
+      x.style.display = "block";
+    } else {
+      x.style.display = "none";
+    }
   } else {
-    x.style.display = "none";
+    alert("You can't view the map until you agree the terms")
   }
+  
+  
 }
 </script>
 
