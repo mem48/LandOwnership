@@ -31,5 +31,5 @@ names(dat) <- c("Title","geocoded_address","geocode_type","geometry")
 dat2 = left_join(dat, lr, by = "Title")
 qtm(dat2[1:100,])
 
-st_write(dat2,"data/tilegeojson/uk_owners.geojson")
+st_write(dat2,"data/tilegeojson/uk_owners.geojson", delete_dsn = TRUE)
 
