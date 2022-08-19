@@ -17,47 +17,10 @@
 </script>
 
 <!-- Set Up Mapbox -->
-<script src='https://unpkg.com/maplibre-gl@2.1.9/dist/maplibre-gl.js'></script>
-<link href='https://unpkg.com/maplibre-gl@2.1.9/dist/maplibre-gl.css' rel='stylesheet' />
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.js"></script>
+<link rel="stylesheet" href="web/style.css">
 
-<style>
-table, th, td {
-  border: 1px solid black;
-  border-collapse: collapse;
-}
-.welcome {
-  position: fixed;
-  top: 2%;
-  max-width: 800px;
-  width: 90%;
-  height: 530px;
-  max-height: 90%;
-  background-color: white;
-  border: solid 1px #444;
-  border-radius: 10px;
-  z-index: 1003;
-  padding: 10px;
-  overflow: auto; 
-  margin-left: 5px;
-  margin-right: 5px;
-}
-p.welcome-end {
-    font-size: 0.9em;
-    font-weight: normal;
-}
-.closewelcome {
-  color: black;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-}
-.closewelcome:hover,
-.closewelcome:focus {
-  color: #000;
-  text-decoration: none;
-  cursor: pointer;
-}
-</style>
 
 </head>
 <body>
@@ -66,224 +29,70 @@ p.welcome-end {
 <div style="position: absolute; top: 10px; left: 10px; z-index: 9; opacity: 0.8; background-color: #EBEBEB;">
   <p><label><input type="checkbox" id="inspirecheckbox" value="true" onclick="toggleLayer('inspire')" checked>Inspire Polygons</label></p>
   <p><label><input type="checkbox" id="landownerscheckbox" value="true" onclick="toggleLayer('landowners')" checked>Owner Points</label></p>
+  <p><select id="layerinput" name="layerinput" onchange="switchLayer()" aria-label="Onwers Layer">
+      <option value="Category" selected>Type of Company</option>
+      <option value="geocode_type">Geocoding Accuracy</option>
+  </select></p>
 </div>
 
 <!-- splash -->
 <div id="welcome" class="welcome">
-<span class="closewelcome">&times;</span>
-<iframe width="100%" height="93%" src="https://forms.office.com/Pages/ResponsePage.aspx?id=qO3qvR3IzkWGPlIypTW3ywVZfmO0bwdAhK0UztpneQtUMVRIR1JDS1EyUkJOQkJNTlE4WTY3MkxVWS4u&embed=true" frameborder="0" marginwidth="0" marginheight="0" style="border: none; max-width:100%; max-height:100vh" allowfullscreen webkitallowfullscreen mozallowfullscreen msallowfullscreen> </iframe>  
+<h1> Welcome to the England and Wales land onwership map</h1>
+<p>This map is intended to help people understand land ownership in England and Wales. It maps data published by the <a href = "https://www.gov.uk/government/organisations/land-registry">Land Registry</a>. For code and more information on data and methods see the <a href="https://github.com/mem48/LandOwnership/">GitHub repo</a>.</p>
+
+
+
+<div style="background-color: #a5cffa; padding: 5px">
+  <p><b>To view the map, please provide the information below:</b></p>
+  <form 
+  method="POST" 
+  action="https://script.google.com/macros/s/AKfycbxNzqg-ewbcHJCqRNgzPPWhCyPXZAdlTNVpepVN6o59oKRTqKj3n-8WR7oG50_CQYOT/exec"
+>
+  <label for="Name">Full name </label>
+  <input name="Name" type="text" placeholder="Full name" required><br>
+  <label for="Consent">I agree to the terms of use for this site (see below): </label>
+  <input name="Consent" type="checkbox" required><br>
+  <label for="Cookies">I agree to the use of Google Analytics cookies: </label>
+  <input name="Cookies" type="checkbox" required><br>
+  
+  <button type="submit" onclick="closewelcome()">Take me to the map</button>
+</form></div>
+
+
+<h2>Why do you ask for my name?</h2>
+<p>The <a href="https://use-land-property-data.service.gov.uk/datasets/ccod/licence/view">licence</a> for the data published by the Land Registry requires that we <i>"maintain End-User Records ... for the purpose of auditing compliance with the terms of this Licence and/or for the prevention and/or detection of crime"</i>. Therefore we ask for your name and record the time you visited the site. We won't share this data with anybody unless the Land Registry requires us to as part of an audit. </p>
+
+<h2>Terms of use</h2>
+<p>This website is for personal, non-commercial use. The information is illustrative and may contain errors or missing data. You must not attempt to scrape or bulk download the data. You cannot embed or reproduce the maps or data without written consent.</p>
+
+<h2>Copyright Notice</h2>
+<p>This information is subject to Crown copyright and database rights 2022 and is reproduced with the <a href="https://use-land-property-data.service.gov.uk/datasets/inspire#conditions">permission of HM Land Registry</a>.</p>
+<p>The polygons (including the associated geometry, namely x, y co-ordinates) are subject to Crown copyright and database rights 2022 Ordnance Survey 100026316.</p>
+<p>Contains OS data © Crown copyright and database right 2022</p>
+<p>Contains Royal Mail data © Royal Mail copyright and Database right 2022</p>
+<p>Contains National Statistics data © Crown copyright and database right 2022</p>
+
+<h2>Cookies Notice</h2>
+<p>We use Google Analytics as part of the requirement to log the usage of Land Registry data. These services may set third-party cookies.</p>
+
 </div>
 
 <script>
-// Get the welcome
-var welcome = document.getElementById("welcome");
-
-// Get the <span> element that closes the welcome
-var span = document.getElementsByClassName("closewelcome")[0];
-
-// When the user clicks on <span> (x), close the welcome
-span.onclick = function() {
-  welcome.style.display = "none";
-};
+function closewelcome() {
+  var x = document.getElementById("welcome");
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
 </script>
 
 
 <!-- map -->
 <div id="map" class="map" style='width: 100%; height: 600px;'>
 <script type="text/javascript">
-    // Setup Map
-var map = new maplibregl.Map({
-		container: 'map',
-		style: 'web/style_light.json',
-		center: [0, 52], 
-		zoom: 6,
-		maxZoom: 16,
-    minZoom: 4
-		});
 
-
-// Add controls to the map.
-map.addControl(new maplibregl.NavigationControl());
-map.addControl(new maplibregl.AttributionControl({
-customAttribution: 'Contains OS data © Crown copyright 2022'
-}));
-map.addControl(new maplibregl.GeolocateControl({
-positionOptions: {
-enableHighAccuracy: true
-},
-trackUserLocation: true
-})
-,'top-right');
-map.addControl(new maplibregl.ScaleControl({
-  maxWidth: 80,
-  unit: 'metric'
-}),'bottom-right');
-    
-map.on('load', function() {
-map.addSource('inspire', {
-	'type': 'vector',
-	'tiles': [
-	'https://storage.googleapis.com/vector_tiles/inspire_full/{z}/{x}/{y}.pbf'
-	],
-	'minzoom': 6,
-	'maxzoom': 16
-});
-
-map.addSource('landowners', {
-	'type': 'vector',
-	'tiles': [
-	'https://www.wisemover.co.uk/tiles/landowners/{z}/{x}/{y}.pbf'
-	],
-	'minzoom': 6,
-	'maxzoom': 16
-});
-
-toggleLayer('landowners');
-toggleLayer('inspire');
-
-
-
-});
-
-// Click on landowners
-map.on('click', 'landowners', function (e) {
-var coordinates = e.features[0].geometry.coordinates.slice();
-var Title = e.features[0].properties.Title;
-var Tenure = e.features[0].properties.Tenure;
-var Property_Address = e.features[0].properties.Property_Address;
-var Company_No = e.features[0].properties.Company_No;
-var Category = e.features[0].properties.Category;
-var geocoded_address = e.features[0].properties.geocoded_address;
-var geocode_type = e.features[0].properties.geocode_type;
-var Proprietor = e.features[0].properties.Proprietor;
-
-
-var description = '<p> Title No: ' + Title + '</p>' +
-'<p> Proprietor: ' + Proprietor + '</p>' +
-'<p> Tenure: ' + Tenure + '</p>' +
-'<p> Company No: ' + Company_No + '</p>' +
-'<p> Category: ' + Category + '</p>' +
-'<p> Property Address: ' + Property_Address + '</p>' +
-'<p> Geocoded address: ' + geocoded_address + '</p>' +
-'<p> Geocode type: ' + geocode_type + '</p>';
- 
-
-new maplibregl.Popup()
-.setLngLat(coordinates)
-.setHTML(description)
-.addTo(map);
-});
-
-
-// Click on inspire
-map.on('click', 'inspire', function (e) {
-var coordinates = e.lngLat;
-var INSPIREID = e.features[0].properties.INSPIREID;
-var local_authority = e.features[0].properties.local_authority;
-var area = e.features[0].properties.area;
-
-var description = '<p> INSPIRE ID: ' + INSPIREID + '</p>' +
-'<p> Local Authority: ' + local_authority + '</p>' +
-'<p> Area: ' + area + '</p>';
- 
-
-new maplibregl.Popup()
-.setLngLat(coordinates)
-.setHTML(description)
-.addTo(map);
-});
- 
-// Change the cursor to a pointer when the mouse is over the places layer.
-map.on('mouseenter', 'landowners', function () {
-map.getCanvas().style.cursor = 'pointer';
-});
- 
-// Change it back to a pointer when it leaves.
-map.on('mouseleave', 'landowners', function () {
-map.getCanvas().style.cursor = '';
-});
-
-// Change the cursor to a pointer when the mouse is over the places layer.
-map.on('mouseenter', 'inspire', function () {
-map.getCanvas().style.cursor = 'pointer';
-});
- 
-// Change it back to a pointer when it leaves.
-map.on('mouseleave', 'inspire', function () {
-map.getCanvas().style.cursor = '';
-});
-
-
-function toggleLayer(layerName){
-  var checkBox = document.getElementById(layerName.concat('checkbox'));
-  // If the checkbox is checked add the layer to the map
-  if (checkBox.checked === true){
-    switch(layerName) {
-      case 'inspire':
-        map.addLayer({
-            'id': 'inspire',
-            'type': 'fill',
-            'source': 'inspire',
-            'source-layer': 'inspire',
-            'paint': {
-              'fill-color': 'rgba(188,128,189, 0.3)'
-            }
-        });
-      case 'landowners':
-        map.addLayer({
-            'id': 'landowners',
-            'type': 'circle',
-            'source': 'landowners',
-            'source-layer': 'landowners',
-            'paint': {
-              // make circles larger as the user zooms from z12 to z22
-              'circle-radius': {
-                'base': 2.5,
-                'stops': [
-                  [8, 3],
-                  [22, 180]
-                ]
-              },
-              // color circles by ethnicity, using a match expression
-              // https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-match
-              'circle-stroke-width': 1,
-              "circle-color": [
-          			'match',
-          			['get', 'Category'],
-          			'Co-operative Society (Company)','#a6cee3',
-                'Co-operative Society (Corporate Body)','#1f78b4',
-                'Community Benefit Society (Company)','#fdbf6f',
-                'Community Benefit Society (Corporate Body)','#ff7f00',
-                'Housing Association Co-operative Society (Company)','#e5f5f9',
-                'Housing Association Co-operative Society (Corporate Body)','#ccece6',
-                'Housing Association Community Benefit Society (Company)','#99d8c9',
-                'Housing Association Community Benefit Society (Corporate Body)','#66c2a4',
-                'Housing Association Registered Society (Company)','#41ae76',
-                'Housing Association Registered Society (Corporate Body)','#238b45',
-                'Housing Association/Society (Company)','#238b45',
-                'Housing Association/Society (Corporate Body)','#00441b',
-                'Industrial and Provident Society (Company)','#fb9a99',
-                'Industrial and Provident Society (Corporate Body)','#e31a1c',
-                'Local Authority','#cab2d6',
-                'County Council','#6a3d9a',
-                'Registered Society (Company)','#ffed6f',
-                'Registered Society (Corporate Body)','#ffffb3',
-                'Unlimited Company','#d7b5d8',
-                'Corporate Body','#df65b0',
-                'Limited Company or Public Limited Company','#dd1c77',
-                'Limited Liability Partnership','#980043',
-          			/* other */ '#e0e0e0'
-          			]
-            }
-        });
-        break;
-      default:
-        console.log('unknown layer selected');
-    } 
-  } else {
-    if (map.getLayer(layerName)) map.removeLayer(layerName);
-  }
-}
 
 </script>
 <!-- map -->
@@ -300,69 +109,54 @@ The map shows two types of data:
 <h2>Ownership Points</h2>
 <p>The Land Registry does not publish data on who owns every piece of land in England and Wales, but they do publish data on some types of organisations. Specifically UK and overseas companies that own land. This map shows the point locations of these properties. The geocoding is a work in progress and more data will be added soon.</p> 
 
-<p>Click on a point for more information:</p>
-
-<p>
- <table>
+<!-- The Modal -->
+<div id="myModal" class="modal">
+<span class="close">&times;</span>
+  <table>
   <tr>
-    <th>Variaible</th>
-    <th>Description</th>
-  </tr>
+	<th>Name</th>
+	<th>Value</th>
+	</tr>
+	
   <tr>
-    <td>Title</td>
-    <td>The title number</td>
+	<td><abbr title="The title number">Title</abbr></td>
+	<td align='right' id="Title">NA</td>
   </tr>
-  <tr>
-    <td>Proprietor</td>
-    <td>The name of the company that owns the property, in some cases, there is more than one proprietor, but we only show the first name.</td>
-  </tr>
-  <tr>
-    <td>Tenure</td>
-    <td>Is the land freehold or leasehold</td>
-  </tr>
-  <tr>
-    <td>Company No</td>
-    <td>The company number</td>
-  </tr>
-  <tr>
-    <td>Category</td>
-    <td>The type of comapny</td>
-  </tr>
-  <tr>
-    <td>Property Address</td>
-    <td>The address registered with the Land Registry; this may be multiple addresses per title</td>
-  </tr>
-  <tr>
-    <td>Geocoded address</td>
-    <td>The address that was used to locate the point. This should be the same as the Property Address but may differ if the title included multiple addresses or if the geocoder has misinterpreted the address</td>
-  </tr>
-  <tr>
-    <td>Geocode type</td>
-    <td>What has the geocoder found, usually an Address but may be a road or postcode if the geocoder was unable to find a good match.</td>
-  </tr>
-
-</table> 
-</p>
-
-<h2>Why do you ask for my name?</h2>
-<p>The <a href="https://use-land-property-data.service.gov.uk/datasets/ccod/licence/view">licence</a> for the data published by the Land Registry requires that we "maintain End-User Records ... for the purpose of auditing compliance with the terms of this Licence and/or for the prevention and/or detection of crime". Therefore we ask for your name and record the time you visited the site. We won't share this data with anybody unless the Land Registry requires us to as part of an audit. </p>
-
-<h2>Terms of use</h2>
-<p>This website is for personal, non-commercial use. The information is illustrative and may contain errors or missing data. You must not attempt to scrape or bulk download the data. You cannot embed or reproduce the maps or data without written consent.</p>
-
-<h2>Copyright Notice</h2>
-<p>This information is subject to Crown copyright and database rights 2022 and is reproduced with the <a href="https://use-land-property-data.service.gov.uk/datasets/inspire#conditions">permission of HM Land Registry</a>.</p>
-<p>The polygons (including the associated geometry, namely x, y co-ordinates) are subject to Crown copyright and database rights 2022 Ordnance Survey 100026316.</p>
-<p>Contains OS data © Crown copyright and database right 2022</p>
-<p>Contains Royal Mail data © Royal Mail copyright and Database right 2022</p>
-<p>Contains National Statistics data © Crown copyright and database right 2022</p>
-
-<h2>Cookies Notice</h2>
-<p>We use Google Analytics and Microsoft Forms as part of the requirement to log the usage of Land Registry data. These services may set third-party cookies.</p>
-
-<div>
   
+  <tr>
+  <td><abbr title="The name of the company that owns the property">Proprietor</abbr></td>
+  <td align='right' id="Proprietor">NA</td>
+</tr>
+<tr>
+  <td><abbr title="Is the land freehold or leasehold">Tenure</abbr></td>
+  <td align='right' id="Tenure">NA</td>
+</tr>
+<tr>
+  <td><abbr title="The company number">Company No</abbr></td>
+  <td align='right' id="Company_No">NA</td>
+</tr>
+<tr>
+  <td><abbr title="The type of comapny">Category</abbr></td>
+  <td align='right' id="Category">NA</td>
+</tr>
+<tr>
+  <td><abbr title="The address registered with the Land Registry; this may be multiple addresses per title">Property Address</abbr></td>
+  <td align='right' id="Property_Address">NA</td>
+</tr>
+<tr>
+  <td><abbr title="The address that was used to locate the point. This should be the same as the Property Address but may differ if the title included multiple addresses or if the geocoder has misinterpreted the address">Geocoded address</abbr></td>
+  <td align='right' id="geocoded_address">NA</td>
+</tr>
+<tr>
+  <td><abbr title="What has the geocoder found, usually an Address but may be a road or postcode if the geocoder was unable to find a good match">Geocode type</abbr></td>
+  <td align='right' id="geocode_type">NA</td>
+</tr>
+</table>
 </div>
+
+
+<script type="text/javascript" src="web/map.js"></script>
+<script type="text/javascript" src="web/modal.js"></script>
 
 </body>
 </html>

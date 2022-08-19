@@ -1,0 +1,60 @@
+body {
+  font-family: Helvetica, sans-serif;
+}
+
+table, th, td {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+.welcome {
+  position: fixed;
+  top: 2%;
+  left: 2%;
+  width: 95%;
+  height: 95%;
+  /* max-width: 800px;
+  width: 90%;
+  height: 530px;
+  max-height: 90%; */
+  background-color: white;
+  border: solid 1px #444;
+  border-radius: 10px;
+  z-index: 1003;
+  padding: 10px;
+  overflow: auto; 
+  margin-left: 5px;
+  margin-right: 5px;
+}
+p.welcome-end {
+    font-size: 0.9em;
+    font-weight: normal;
+}
+.closewelcome {
+  color: black;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+.closewelcome:hover,
+.closewelcome:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1000; /* Sit on top */
+  left: 5;
+  top: 10px;
+  width: 400px;
+  height: 500px; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: #FFFFFF; /* Fallback color */
+  -webkit-animation-name: fadeIn; /* Fade in the background */
+  -webkit-animation-duration: 0.4s;
+  animation-name: fadeIn;
+  animation-duration: 0.4s;
+}
