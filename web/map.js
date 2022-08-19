@@ -5,7 +5,7 @@ container: 'map',
 style: 'mapbox://styles/mapbox/light-v10',
 center: [0, 52], 
 zoom: 6,
-maxZoom: 16,
+maxZoom: 18,
 minZoom: 6
 
 });
