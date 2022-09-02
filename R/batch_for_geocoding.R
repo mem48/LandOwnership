@@ -1,6 +1,6 @@
 # Break into csv of 50,000 for geocoding
 
-type = "UK_freehold_pc_single_short"
+type = "UK_freehold_pc_single_long_simple"
 
 addr <- readRDS(paste0("data/",type,".Rds"))
 
@@ -22,7 +22,8 @@ for(i in seq_len(length(list_split))){
   path <- paste0("data/for_geocoding/",type,"_batch_",stringr::str_pad(i,3, pad = "0"),".csv")
   write.csv(sub, path,
             row.names = FALSE,
-            fileEncoding = "UTF-8")
+            fileEncoding = "UTF-8",
+            na = "")
   # headder <- paste0("Bing Spatial Data Services, 2.0, ",type,"_batch_",i)
   # headder <- c(headder, paste(names(sub), collapse = ", "))
   # write.table(headder, file = path,

@@ -1,5 +1,6 @@
 # No postocdes
 library(purrr)
+library(furrr)
 source("R/address_functions.R")
 
 freehold_nopc = readRDS("data/UK_freehold_nopc.Rds") # 477,044
@@ -15,16 +16,21 @@ freehold_nopc_good = freehold_nopc_good[!grepl("sub-station", freehold_nopc_good
 freehold_nopc_good = freehold_nopc_good[!grepl("sub station", freehold_nopc_good$`Property Address`,ignore.case = TRUE),]
 freehold_nopc_good = freehold_nopc_good[!grepl("part of", freehold_nopc_good$`Property Address`,ignore.case = TRUE),]
 
-#freehold_nopc_good$AddressLine <- map_chr(freehold_nopc_good$`Property Address`, clean_numbers)
+message(Sys.time())
+plan(multisession, workers = 30)
+AddressLine = future_map(freehold_nopc_good$`Property Address`, split_numbers_try, .progress = TRUE)
+plan(sequential)
 
-AddressLine <- map(freehold_nopc_good$`Property Address`, split_numbers_try)
 reps <- lengths(AddressLine)
 AddressLine <- unlist(AddressLine)
 
 freehold_nopc_good2 <- freehold_nopc_good[rep(1:nrow(freehold_nopc_good), times = reps),]
 freehold_nopc_good2$AddressLine <- AddressLine
 
+foo = freehold_nopc_good2[grepl("\\inclusive\\b",freehold_nopc_good2$AddressLine),]
+
+
 freehold_nopc_bad <- freehold_nopc[!freehold_nopc$Id %in% freehold_nopc_good2$Id,]
 
-saveRDS(freehold_nopc_good2, "data/UK_freehold_nopc_simple.Rds") # 1,830,024
-saveRDS(freehold_nopc_bad, "data/UK_freehold_nopc_complex.Rds") # 111,191 - lots of sub stations
+saveRDS(freehold_nopc_good2, "data/UK_freehold_nopc_simple.Rds") # 1,818,607
+saveRDS(freehold_nopc_bad, "data/UK_freehold_nopc_complex.Rds") # 111,211 - lots of sub stations

@@ -3,7 +3,9 @@ library(combinat)
 library(dplyr)
 library(stringr)
 library(furrr)
-library(stringr)
+library(tm)
+library(tau)
+library(corpus)
 
 source("R/address_functions.R")
 freehold_pc_land = readRDS("data/UK_freehold_pc_land.Rds")
@@ -63,6 +65,171 @@ res_clean$AddressLine <- sub("^\\s","",res_clean$AddressLine)
 res_clean$AddressLine <- sub("\\s\\(\\)$","",res_clean$AddressLine)
 res_clean$AddressLine <- sub("\\s\\($","",res_clean$AddressLine)
 
+res_clean$`Property Address` <- res_clean$AddressLine
+res_clean$AddressLine <- NULL
+
+freehold_pc_land <- rbind(freehold_pc_land, res_clean)
+rm(res_clean, res, pa, split_sub, breaks, df2, sections, split_locs, i, j, starts, df_sub,freehold_pc_land_multi)
+
+# Clean compass directions
+freehold_pc_land$`Property Address` <- gsub("northern","north",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("southern","south",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("eastern","east",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("western","west",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+
+freehold_pc_land$`Property Address` <- gsub("northly","north",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("southernly","south",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("easterly","east",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("westerly","west",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+
+freehold_pc_land$`Property Address` <- gsub("north-east","northeast",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("south-east","southeast",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("north-west","northwest",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("south-west","southwest",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+
+freehold_pc_land$`Property Address` <- gsub("north east","northeast",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("south east","southeast",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("north west","northwest",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("south west","southwest",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+
+# Clean spelling errors
+freehold_pc_land$`Property Address` <- gsub("\\badjoing\\b","adjoining",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("\\badjoingin\\b","adjoining",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("\\badjoinining\\b","adjoining",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("\\bADJOINNG\\b","adjoining",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("\\badjoning\\b","adjoining",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+freehold_pc_land$`Property Address` <- gsub("\\bajoining\\b","adjoining",freehold_pc_land$`Property Address`, ignore.case = TRUE)
+
+# Analyse the text for common words/phrases
+
+TextDoc <- Corpus(VectorSource(freehold_pc_land$`Property Address`))
+text_sats <- term_stats(TextDoc, ngrams = 3:100)
+text_sats <- text_sats[text_sats$count > 5,]
+text_sats$support <- NULL
+text_sats$nchar <- nchar(text_sats$term)
+text_sats <- text_sats[order(text_sats$nchar, text_sats$count, decreasing = TRUE),]
+
+# Remove strings that are shorter versions of longer strings
+sub_check <- function(x,y){
+  r <- sum(stringi::stri_detect_fixed(y, x, max_count = 2), na.rm = TRUE)
+  if(r > 1){
+    return(TRUE)
+  } else {
+    return(FALSE)
+  }
+}
+
+message(Sys.time())
+plan(multisession, workers = 20)
+sub = future_map_lgl(text_sats$term, sub_check, y = text_sats$term, .progress = TRUE)
+plan(sequential)
+message(Sys.time())
+
+text_sats_unique <- text_sats[!sub,]
+text_sats_unique <- text_sats_unique[!grepl("[0-9]",text_sats_unique$term),]
+
+write.csv(text_sats_unique, "data/common_land_terms.csv", row.names = FALSE)
+
+# Build a term-document matrix
+# TextDoc <- Corpus(VectorSource(freehold_pc_land$`Property Address`))
+# TextDoc_dtm <- TermDocumentMatrix(TextDoc)
+# dtm_m <- as.matrix(TextDoc_dtm)
+# # Sort by descearing value of frequency
+# dtm_v <- sort(rowSums(dtm_m),decreasing=TRUE)
+# dtm_d <- data.frame(word = names(dtm_v),freq=dtm_v)
+# # Display the top 5 most frequent words
+# head(dtm_d, 5)
+
+text_rem <- readxl::read_excel("data/common_land_terms.xlsx")
+text_rem$remove[is.na(text_rem$remove)] = "f"
+text_rem1 <- unique(text_rem$term[text_rem$remove == "t"])
+text_rem2 <- unique(text_rem$possible)
+text_rem2 <- text_rem2[!is.na(text_rem2)]
+text_rem3 <- c("Land lying to the South, East and northwest of",
+               "all mines minerals and quarries (except stone quarries) under the land shown edged with red on the plan of the above title filed at the Registry and being",
+               "and other land",
+               "The Freehold mines and minerals mines quarries minerals and mineral substances other than coal and coal mines whatsoever whether opened or unopened under the land shown edged red on the plan to the above title filed at the Land Registry being ",
+               "minerals and mineral like substances under the land shown edged with red on the plan of the above title filed at the Registry and being ",
+               "and land and garages at",
+               "Garages and other land",
+               "and land being the site of a",
+               "excluding from the title so much (if any) of that land as comprises highway which is maintained at the public expense (but only so much of the relevant land which is vested in the relevant highway authority)",
+               "NOTE; The land tinted green is not included in this title",
+               "The Freehold land shown edged with red on the plan of the above title filed at the Registry and being",
+               "and land associated with",
+               "The Freehold mines and minerals lying below the land shown tinted pink on the plan of the above title filed at the Registry and being",
+               "other land to the north, northwest and northeast",
+               "land and buildings on the southwest",
+               "and land and sub-station on the south",
+               "all mines minerals and mineral substrata lying at a greater depth than 60.96 metres (200 feet) from the surface under land shown edged with red on the plan of the above title filed at the Registry and being",
+               "The Freehold mines and minerals lying under the land shown tinted pink on the plan of the above title filed at the Registry and being  William King Flour Mill, Willow Road, Denham are included in the title",
+               "The Freehold mines and minerals under the land shown edged and numbered 1, 2 and 3 in blue on the plan of the above title filed at the Registry and being 604, 606 and 608 Commercial Road are included in the title",
+               "all mines minerals and mineral substrata lying at a greater depth than 60.96 metres (200 feet) from the surface under land shown edged with red on the plan of the above title filed at the Registry and being",
+               "Railway Tunnels, Cables, Wires and Equipment situate in the subsoil and a band of subsoil three metres in width surrounding the external walls of the said tunnels and equipment beneath the land edged red on the filed plan, beneath",
+               "The Freehold mines and minerals lying within or beneath the property within the land shown edged with yellow and edged with blue on the plan of the above title filed at the Registry and being  Pentre Uchaf are included in the title",
+               "The Freehold royal mines and other minerals and mineral like substances, except the mines of plaster gypsum and alabaster, under the land shown edged and numbered SF567208",
+               "all mines quarries minerals and mineral substances whatsoever including sand and gravel and other surface minerals whether opened or unopened within and under the land edged red on the plan of the above title filed at the Registry being",
+               "beds of gypsum, anhydrite and associated interbedded mudstone (the Minerals) at depths between levels 25 metres and 45 metres above Ordnance Datum under the land shown edged with red on the plan of the above title filed at the Registry being",
+               "As to the land tinted blue on the filed plan the shop numbered",
+               "all that stratum of sub-soil 11 metres in depth below the land edged red on the filed plan The upper surface of which stratum is at a level equivalent to 2407 metres beneath the point marked X on the filed plan, underneath  the front of",
+               "any , excluding any mines and minerals which vested in the Coal Authority pursuant to the Coal Act 1938, under the land shown edged red on the plan of the above title filed at the Registry and being ",
+               "The Freehold mines and minerals lying upon and under the land shown edged and numbered EX804825 on the plan of the above title filed at the Registry and being",
+               "all mines quarries minerals and mineral substances opened or unopened within and under the land shown edged with red on the plan of the above title filed at the Registry excluding any mines and minerals which vested in the Coal Commission pursuant to the Coal Act 1938 and being",
+               "all Royal mines of gold and silver and all other mines minerals and mineral like substances (other than coal and mines of coal vested in the Coal Commission pursuant to the Coal Act 1938) land shown edged with red on the plan of the above title filed at the Registry and being",
+               "all mines and minerals being evaporites including potash polyhalite salt and intermingled minerals and other minerals lying below or at a depth in excess of 600 metres from the surface thereof under land shown edged with red on the plan of the above title filed at the Registry being",
+               "are included in the title.  As to the land tinted mauve on the filed plan only the first floor flat belonging to and forming",
+               "using the subsoil or undersurface of the said land and of constructing (but by underground workings only) and maintaining in or through such subsoil or undersurface tunnels or works authorised by the said Act of 1936. Together with the space occupied by such tunnels and works  subsoil excavated in the construction thereof. The land affected by such easement or right is",
+               "all mines and minerals metal  substance or product whatsoever beyond a distance of 60.96m (200 feet) from the surface and whether opened or unopened worked or unworked, excluding any mines and minerals which vested in the Coal Authority pursuant to the Coal Act 1938, under land shown edged with red on the plan of the above title filed at the Registry and being",
+               "As to the part edged and numbered 3 in blue on the title plan, excluded from the title is the  the property constructed at first floor level upwards  air space thereby and situate over the land edged and numbered 3 in blue on the title plan, but including all parts of the land edged and numbered 3 in blue on the title plan below the under surface of the property constructed at first floor level",
+               "including the following ancillary powers of working granted by a Conveyance of the same  dated 30 July 1969 made between (1) Martha Massey (Vendor) and (2) Imperial Chemical Industries Limited (Purchaser):-  Including full right and liberty for the Purchaser and its assigns and all persons authorised by it to take all usual and necessary means for searching getting pumping and taking away  through any adjoining properties but subject to the payment by the Purchaser and its assigns to the Vendor and her successors in title or other person or persons entitled thereto of compensation for all damage or injury which she or they or her or their tenants might sustain by reason of the working of the said mines and minerals mineral substances salt rock or salt brine including any damage or injury occasioned to the surface of the land or to any buildings for the time being erected thereon",
+               "using the subsoil or undersurface of the said land and of constructing (but by underground workings only) and maintaining in or through such subsoil or undersurface tunnels or works authorised by the said Act of 1936. Together with the space occupied by such tunnels and works  subsoil excavated in the construction thereof. The land affected by such easement or right is",
+               "The Freehold mines and minerals lying under or upon the land shown hatched mauve on the plan filed at the Registry and being Lower Forest, Treflach, Oswestry SY10 9HT are included in this title.   The Freehold mines and minerals lying under or upon the land tinted mauve on the plan filed at the Registry and being Middle Forest, Treflach, Oswestry are included in this title",
+               "all mines minerals metal  substance or product whatsoever beyond the distance of 60.96m (200 feet) from the surface and whether opened or unopened worked or unworked, excluding any mines and minerals which vested in the Coal Authority pursuant to the Coal Act 1938, under the land shown edged with red on the plan of the above title filed at the Registry and being ",
+               "all mines minerals metal  substance or product whatsoever beyond the distance of 60.96 metres (200 feet) from the surface and whether opened or unopened worked or unworked, excluding any mines and minerals which vested in the Coal Authority pursuant to the Coal Act 1938, under the land shown edged with red on the plan of the above title filed at the Registry and being  ",
+               "all the mines and minerals under or within the land comprised in a conveyance dated 2 August 1944 made between (1) G B Holt and (2) G W Conner and a conveyance dated 15 March 1968 made between (1) T Foxton (2) Lloyds Bank Limited and (3) G W Conner Limited lying under the land shown edged with red on the plan of the above title filed at the Registry and being",
+               "all mines quarries minerals and mineral substances whatsoever (including sand and gravel and all other surface minerals  avoidance of doubt the air space or void created from time to time by the winning working getting and carrying away of any of the said minerals and mineral substances upon and under the land shown edged with red on the plan of the above title filed at the Registry and being  ",
+               "all mines, quarries, minerals and mineral substances whatsoever including all stone, shales clays and common strata of the district and all sand and gravel and other surface minerals and any underground air space or void created by the winning and working getting and carrying away of the minerals under the land shown edged with red on the plan of the above Title filed at the Registry and being  ",
+               "As to the part edged and numbered 3 in blue on the title plan, excluded from the title is the  the property constructed at first floor level upwards  air space thereby and situate over the land edged and numbered 3 in blue on the title plan, but including all parts of the land edged and numbered 3 in blue on the title plan below the under surface of the property constructed at first floor level",
+               "under the land shown edged with red on the plan of the above Title filed at the Registry and being",
+               "the subsoil or undersurface of a piece of  the retained land (as hereinafter defined underground structure or tunnel about twelve feet in diameter or Firstly hereinbefore described in a northwest direction towards the east corner of the buildings and premises known as the St. Margarets Bay Telephone Repeater Station as marked by the letters TRS on the said plan at a depth thereunder of not less than forty feet measured from the mean natural ground level to the uppermost  such structure or tunnel",
+               "including the following ancillary powers of working reserved by a Conveyance of the land dated 8 February 1971 made between (1) Imperial Chemical Industries Limited (Vendor) and (2) Olive Leslie Hollinshead:-  EXCEPT AND RESERVED as is in the Schedule more particularly mentioned                        THE SCHEDULE referred to            Exceptions and Reservations in favour of the Vendor  ALL mines and minerals and underground substances of every description including salt salt rock and brine and brine springs including the right to search for win and work ",
+               "following ancillary powers of working  16 January 1963 made between (1) Imperial Chemical Industries Limited (Vendors) and (2) Gerard Henry Bird and Mary Bird:-  EXCEPT AND RESERVING unto  in fee simple all mines and minerals  of every description including salt salt rock and brine  under the property hereby assured and all easements powers and rights (including the right to lay pipes) necessary or proper to enable  and persons authorised by them to win work get pump and take away ",
+               "in green  plan of the above title filed at the Registry and being",
+               "The description of the registered estate is an entry made under rule 5(a) of the Land Registration Rules 2003 and it is not a note to which paragraph 2 of Schedule 8 to the Land Registration Act 2002 refers that the registered estate includes the mines or minerals under the land edged and numbered in green on the title plan. The mines and minerals under the said l title plan are only included in the registration to the extent that they were so included before the Transfers of the said land edged and numbered in green",
+               ", including the following ancillary powers of working granted by a Conveyance of the same  dated 30 July 1969 made between (1) Martha Massey (Vendor) and (2) Imperial Chemical Industries Limited (Purchaser):-  Including full right and liberty for the Purchaser and its assigns and all persons authorised by it to take all usual and necessary means for searching getting pumping and taking away  through any adjoining properties but subject to the payment by the Purchaser and its assigns to the Vendor and her successors in title or other person or persons entitled thereto of compensation for all damage or injury which she or they or her or their tenants might sustain by reason of the working of the said mines and minerals mineral substances salt rock or salt brine including any damage or injury occasioned to the surface of the land or to any buildings for the time being erected thereon",
+               "all mines minerals and quarries (except stone quarries) under the land shown edged with red on the plan of the above title filed at the Registry and being",
+               "he description of the registered estate is an entry made under rule 5(a) of the Land Registration Rules 2003 and it is not a note to which paragraph 2 of Schedule 8 to the Land Registration Act 2002 refers that the registered estate includes the mines or minerals under the land edged and numbered in green on the title plan. The mines and minerals under the said l title plan are only included in the registration to the extent that they were so included before the Transfers of the said land edged and numbered in green"
+               )
+
+
+text_rem <- data.frame(term = c(text_rem1,text_rem2,text_rem3))
+text_rem$nchar <- nchar(text_rem$term)
+text_rem <- text_rem[order(text_rem$nchar, decreasing = TRUE),]
+
+remove_strings <- function(x, y){
+  for(i in seq_along(y)){
+    x <- stringi::stri_replace_all_fixed(x, y[i],"", 
+                                         opts_fixed = stringi::stri_opts_fixed(case_insensitive = TRUE))
+  }
+  x
+}
+
+# y = text_rem$term
+# x = freehold_pc_land$`Property Address`[40000]
+# 
+# x
+# remove_strings(x,y)
+
+message(Sys.time())
+plan(multisession, workers = 20)
+AddressLine = future_map_chr(freehold_pc_land$`Property Address`, remove_strings, y = text_rem$term, .progress = TRUE)
+plan(sequential)
+message(Sys.time())
+
+# Checks
+foo = AddressLine[grepl(" land ",AddressLine)]
+foo = foo[order(nchar(foo), decreasing = TRUE)]
+
 # Some of these addresses nolonger refer to land
 res_clean$land <- grepl("\\bland\\b", res_clean$AddressLine, ignore.case = TRUE)
 summary(res_clean$land)
@@ -105,34 +272,7 @@ res_clean_land <- res_clean_land[!res_clean_land$andLand,]
 # land fronting on
 # ...  and land at the rear 
 
-# Clean compas directions
-freehold_pc_land$`Property Address` <- gsub("northern","north",freehold_pc_land$`Property Address`, ignore.case = TRUE)
-freehold_pc_land$`Property Address` <- gsub("southern","south",freehold_pc_land$`Property Address`, ignore.case = TRUE)
-freehold_pc_land$`Property Address` <- gsub("eastern","east",freehold_pc_land$`Property Address`, ignore.case = TRUE)
-freehold_pc_land$`Property Address` <- gsub("western","west",freehold_pc_land$`Property Address`, ignore.case = TRUE)
 
-freehold_pc_land$`Property Address` <- gsub("northly","north",freehold_pc_land$`Property Address`, ignore.case = TRUE)
-freehold_pc_land$`Property Address` <- gsub("southernly","south",freehold_pc_land$`Property Address`, ignore.case = TRUE)
-freehold_pc_land$`Property Address` <- gsub("easterly","east",freehold_pc_land$`Property Address`, ignore.case = TRUE)
-freehold_pc_land$`Property Address` <- gsub("westerly","west",freehold_pc_land$`Property Address`, ignore.case = TRUE)
-
-freehold_pc_land$`Property Address` <- gsub("north-east","northeast",freehold_pc_land$`Property Address`, ignore.case = TRUE)
-freehold_pc_land$`Property Address` <- gsub("south-east","southeast",freehold_pc_land$`Property Address`, ignore.case = TRUE)
-freehold_pc_land$`Property Address` <- gsub("north-west","northwest",freehold_pc_land$`Property Address`, ignore.case = TRUE)
-freehold_pc_land$`Property Address` <- gsub("south-west","southwest",freehold_pc_land$`Property Address`, ignore.case = TRUE)
-
-freehold_pc_land$`Property Address` <- gsub("north east","northeast",freehold_pc_land$`Property Address`, ignore.case = TRUE)
-freehold_pc_land$`Property Address` <- gsub("south east","southeast",freehold_pc_land$`Property Address`, ignore.case = TRUE)
-freehold_pc_land$`Property Address` <- gsub("north west","northwest",freehold_pc_land$`Property Address`, ignore.case = TRUE)
-freehold_pc_land$`Property Address` <- gsub("south west","southwest",freehold_pc_land$`Property Address`, ignore.case = TRUE)
-
-# Clean spelling errors
-freehold_pc_land$`Property Address` <- gsub("\\badjoing\\b","adjoining",freehold_pc_land$`Property Address`, ignore.case = TRUE)
-freehold_pc_land$`Property Address` <- gsub("\\badjoingin\\b","adjoining",freehold_pc_land$`Property Address`, ignore.case = TRUE)
-freehold_pc_land$`Property Address` <- gsub("\\badjoinining\\b","adjoining",freehold_pc_land$`Property Address`, ignore.case = TRUE)
-freehold_pc_land$`Property Address` <- gsub("\\bADJOINNG\\b","adjoining",freehold_pc_land$`Property Address`, ignore.case = TRUE)
-freehold_pc_land$`Property Address` <- gsub("\\badjoning\\b","adjoining",freehold_pc_land$`Property Address`, ignore.case = TRUE)
-freehold_pc_land$`Property Address` <- gsub("\\bajoining\\b","adjoining",freehold_pc_land$`Property Address`, ignore.case = TRUE)
 
 # Some have text after the postcode, and removing poscoe reduce string length
 postcode <- str_extract_all(freehold_pc_land$`Property Address`, postcode_rx)

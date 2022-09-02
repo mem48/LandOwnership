@@ -4,6 +4,7 @@ library(sf)
 library(tmap)
 tmap_mode("view")
 
+#fls <- "UK_freehold_nopc_simple_batch_010.Rds"
 fls <- list.files("data/geocoded/")
 fls <- fls[!grepl("_old",fls)]
 
@@ -27,32 +28,55 @@ res_fail <- bind_rows(res_fail)
 message(nrow(res)," geocoded")
 message(nrow(res_fail)," failed")
 
-bounds <- readRDS("data/EnglandWalesBuff.Rds")
-bounds <- st_transform(bounds, 4326)
+bounds <- read_sf("data/la_bounds.geojson")
+names(bounds) <- c("la_point","geometry")
+
+
 # Split out by quality
 # Goode one are entityType == Address, confidence == High, and within England and Wales
 
 res$check_id <- 1:nrow(res)
 
-res_good <- res[bounds,]
-res_medium <- res_good[!(res_good$entityType == "Address" &  res_good$confidence == "High"),]
-res_good <- res_good[(res_good$entityType == "Address" &  res_good$confidence == "High"),]
+res <- st_join(res, bounds)
+summary(is.na(res$la_point))
+
+res_nola <- res[is.na(res$la_point), ]
+res <- res[!is.na(res$la_point), ]
+res_wrongla <- res[res$la_point != res$adminDistrict.x, ]
+res <- res[res$la_point == res$adminDistrict.x, ]
+
+
+res_medium <- res[!(res$entityType == "Address" &  res$confidence == "High"),]
+res_good <- res[(res$entityType == "Address" &  res$confidence == "High"),]
+res_low <- res_medium[res_medium$confidence == "Low",]
 res_medium <- res_medium[res_medium$confidence != "Low",]
+
+message(nrow(res_good)," good points out of ",sum(c(nrow(res_low),nrow(res_medium),nrow(res_good),nrow(res_wrongla),nrow(res_nola))))
 
 # tm_shape(res_medium[1:1000,])+
 #   tm_dots(col = "confidence", popup.vars = names(res_medium)[1:19])
 
 
 # Medium ones are mixed bag of good and bad
-summary(res_good$postalCode.x == res_good$postalCode.y)
-summary(res_medium$postalCode.x == res_medium$postalCode.y)
-foo = res_good[res_good$postalCode.x != res_good$postalCode.y,]
-bar = res_medium[res_medium$postalCode.x != res_medium$postalCode.y,]
+# summary(res_good$postalCode.x == res_good$postalCode.y)
+# summary(res_medium$postalCode.x == res_medium$postalCode.y)
+# foo = res_good[res_good$postalCode.x != res_good$postalCode.y,]
+# bar = res_medium[res_medium$postalCode.x != res_medium$postalCode.y,]
+# 
+# res_poor <- res[!res$check_id %in% c(res_good$check_id, res_medium$check_id),]
 
-res_poor <- res[!res$check_id %in% c(res_good$check_id, res_medium$check_id),]
+# Check for duplicates in the good results
+summary(duplicated(st_drop_geometry(res_good[,c("Title.Number","addressLine.x")])))
+
+# foo <- res_good[duplicated(st_drop_geometry(res_good[,c("Title.Number","addressLine.x")])),]
+# foo <- res_good[res_good$Title.Number %in% foo$Title.Number,]
+
 
 saveRDS(res_good,"data/bing_final/bing_geocoded_good.Rds")
 saveRDS(res_medium,"data/bing_final/bing_geocoded_medium.Rds")
-saveRDS(res_poor,"data/bing_final/bing_geocoded_poor.Rds")
+saveRDS(res_low,"data/bing_final/bing_geocoded_low.Rds")
 saveRDS(res_fail,"data/bing_final/bing_geocoded_fail.Rds")
+saveRDS(res_nola,"data/bing_final/bing_geocoded_nola.Rds")
+saveRDS(res_wrongla,"data/bing_final/bing_geocoded_wrongla.Rds")
 
+message(nrow(res_good),"/",nrow(res)," good points")

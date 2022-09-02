@@ -43,7 +43,7 @@ res_clean <- bind_rows(res)
 # Extract the postcodes
 res_clean$AddressLine <- str_replace(res_clean$AddressLine, postcode_rx, "")
 
-# Clean up spare brackets and joing words
+# Clean up spare brackets and joining words
 res_clean$AddressLine <- sub("^and\\s","",res_clean$AddressLine)
 res_clean$AddressLine <- sub("^\\s\\sand\\s","",res_clean$AddressLine)
 res_clean$AddressLine <- sub("^\\sand\\s","",res_clean$AddressLine)
@@ -60,7 +60,7 @@ res_clean$AddressLine <- sub("\\s\\($","",res_clean$AddressLine)
 
 
 # # Clean up the postcodes
-AddressLine <- map(res_clean$AddressLine, split_numbers)
+AddressLine <- map(res_clean$AddressLine, split_numbers_try)
 reps <- lengths(AddressLine)
 AddressLine <- unlist(AddressLine)
 
@@ -70,4 +70,4 @@ res_clean2$AddressLine <- AddressLine
 res_clean2$CountryRegion <- "GB"
 
 
-saveRDS(res_clean2,"data/UK_freehold_pc_multi_split.Rds") #168,911
+saveRDS(res_clean2,"data/UK_freehold_pc_multi_split.Rds") #170,370

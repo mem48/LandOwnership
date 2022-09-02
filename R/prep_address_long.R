@@ -29,5 +29,5 @@ long2 = long2[long2$n_char2 <= 90,]
 
 long_fail = freehold_pc_single_long[!freehold_pc_single_long$Id %in% long2$Id,] # Chains of flats
 
-saveRDS(long2, "data/UK_freehold_pc_single_long_simple.Rds") #456,337
-saveRDS(long_fail, "data/UK_freehold_pc_single_long_complex.Rds") #2316
+saveRDS(long2, "data/UK_freehold_pc_single_long_simple.Rds") #458,020
+saveRDS(long_fail, "data/UK_freehold_pc_single_long_complex.Rds") #2311

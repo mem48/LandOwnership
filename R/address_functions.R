@@ -78,7 +78,7 @@ class_string <- function(str){
   }
   
   
-  if(str %in% c(" to ", "-"," To "," TO ")){
+  if(str %in% c(" to ", "-"," To "," TO "," - ")){
     return("link")
   }
   
@@ -166,36 +166,128 @@ split_numbers <- function(x){
     return(x)
   }
   
-  # Standerdise odd/even/inc
+  #Spelling errors
+  x <- gsub("numberes","numbers",x, ignore.case = TRUE)
+  x <- gsub("nombers","numbers",x, ignore.case = TRUE)
+   
+  # Standardise odd/even/inc
   x <- gsub("inclusive \\(odd\\)","(ODD)",x, ignore.case = TRUE)
   x <- gsub("inclusive \\(odds\\)","(ODD)",x, ignore.case = TRUE)
   x <- gsub("inclusive \\(odd numbers\\)","(ODD)",x, ignore.case = TRUE)
+  x <- gsub("inclusive \\(odd numbers only\\)","(ODD)",x, ignore.case = TRUE)
   x <- gsub("inclusive \\(even\\)","(EVN)",x, ignore.case = TRUE)
   x <- gsub("inclusive \\(evens\\)","(EVN)",x, ignore.case = TRUE)
   x <- gsub("inclusive \\(even numbers\\)","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("inclusive \\(even numbers only\\)","(EVN)",x, ignore.case = TRUE)
+  
+  x <- gsub("\\(odd\\) inclusive","(ODD)",x, ignore.case = TRUE)
+  x <- gsub("\\(odds\\) inclusive","(ODD)",x, ignore.case = TRUE)
+  x <- gsub("\\(odd numbers\\) inclusive","(ODD)",x, ignore.case = TRUE)
+  x <- gsub("\\(odd numbers only\\) inclusive","(ODD)",x, ignore.case = TRUE)
+  
+  x <- gsub("\\(even\\) inclusive","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\(evens\\) inclusive","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\(even numbers\\) inclusive","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\(even numbers only\\) inclusive","(EVN)",x, ignore.case = TRUE)
   
   x <- gsub("odd \\(inclusive\\)","(ODD)",x, ignore.case = TRUE)
   x <- gsub("odds \\(inclusive\\)","(ODD)",x, ignore.case = TRUE)
   x <- gsub("odd numbers \\(inclusive\\)","(ODD)",x, ignore.case = TRUE)
   x <- gsub("odd nos \\(inclusive\\)","(ODD)",x, ignore.case = TRUE)
+  
   x <- gsub("even \\(inclusive\\)","(EVN)",x, ignore.case = TRUE)
   x <- gsub("evens \\(inclusive\\)","(EVN)",x, ignore.case = TRUE)
   x <- gsub("even numbers \\(inclusive\\)","(EVN)",x, ignore.case = TRUE)
   x <- gsub("even nos \\(inclusive\\)","(EVN)",x, ignore.case = TRUE)
   
   x <- gsub("\\(inclusive\\)","(INC)",x, ignore.case = TRUE)
+  x <- gsub("\\(both inclusive\\)","(INC)",x, ignore.case = TRUE)
+  x <- gsub("\\(all inclusive\\)","(INC)",x, ignore.case = TRUE)
+  x <- gsub("\\(odd and even, inclusive\\)","(INC)",x, ignore.case = TRUE)
+  x <- gsub("\\(odd and even inclusive\\)","(INC)",x, ignore.case = TRUE)
+  x <- gsub("\\(even and odd, inclusive\\)","(INC)",x, ignore.case = TRUE)
+  x <- gsub("\\(even and odd inclusive\\)","(INC)",x, ignore.case = TRUE)
   x <- gsub("\\(inc\\)","(INC)",x, ignore.case = TRUE)
   x <- gsub("\\(all\\)","(INC)",x, ignore.case = TRUE)
   
   x <- gsub("\\(odd\\)","(ODD)",x, ignore.case = TRUE)
+  x <- gsub("\\(odd \\)","(ODD)",x, ignore.case = TRUE)
   x <- gsub("\\(odds\\)","(ODD)",x, ignore.case = TRUE)
+  x <- gsub("\\(odd only\\)","(ODD)",x, ignore.case = TRUE)
   x <- gsub("\\(odd nos \\)","(ODD)",x, ignore.case = TRUE)
+  x <- gsub("\\(odd nos\\)","(ODD)",x, ignore.case = TRUE)
+  x <- gsub("\\(odd no\\)","(ODD)",x, ignore.case = TRUE)
+  x <- gsub("\\(odd no \\)","(ODD)",x, ignore.case = TRUE)
+  x <- gsub("\\(odd no's\\)","(ODD)",x, ignore.case = TRUE)
+  x <- gsub("\\(odd no's only\\)","(ODD)",x, ignore.case = TRUE)
   x <- gsub("\\(odd numbers\\)","(ODD)",x, ignore.case = TRUE)
- 
+  x <- gsub("\\(odd numbers-inc\\)","(ODD)",x, ignore.case = TRUE)
+  x <- gsub("\\(odd and inclusive\\)","(ODD)",x, ignore.case = TRUE)
+  x <- gsub("\\(odd numbers inclusive\\)","(ODD)",x, ignore.case = TRUE)
+  x <- gsub("\\(odd number inclusive\\)","(ODD)",x, ignore.case = TRUE)
+  x <- gsub("\\(odd numbers, inclusive\\)","(ODD)",x, ignore.case = TRUE)
+  x <- gsub("\\(odd number, inclusive\\)","(ODD)",x, ignore.case = TRUE)
+  x <- gsub("\\(odd inclusive\\)","(ODD)",x, ignore.case = TRUE)
+  x <- gsub("\\(odd, inclusive\\)","(ODD)",x, ignore.case = TRUE)
+  x <- gsub("\\(inclusive odd\\)","(ODD)",x, ignore.case = TRUE)
+  x <- gsub("\\(inc odd\\)","(ODD)",x, ignore.case = TRUE)
+  x <- gsub("\\(odd nos inclusive\\)","(ODD)",x, ignore.case = TRUE)
+  x <- gsub("\\(odd numbers only\\)","(ODD)",x, ignore.case = TRUE)
+  x <- gsub("\\(odd incl\\)","(ODD)",x, ignore.case = TRUE)
+  x <- gsub("\\(all odd numbers\\)","(ODD)",x, ignore.case = TRUE)
+  x <- gsub("\\(consec odd no's\\)","(ODD)",x, ignore.case = TRUE)
+  
   x <- gsub("\\(even\\)","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\(even \\)","(EVN)",x, ignore.case = TRUE)
   x <- gsub("\\(evens\\)","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\(even only\\)","(EVN)",x, ignore.case = TRUE)
   x <- gsub("\\(even nos \\)","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\(even nos\\)","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\(even no\\)","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\(even no \\)","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\(even no's\\)","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\(even no's only\\)","(EVN)",x, ignore.case = TRUE)
   x <- gsub("\\(even numbers\\)","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\(even numbers-inc\\)","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\(even inclusive\\)","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\(even, inclusive\\)","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\(inclusive even\\)","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\(inc even\\)","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\(even and inclusive\\)","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\(even numbers inclusive\\)","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\(even number inclusive\\)","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\(even numbers, inclusive\\)","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\(even number, inclusive\\)","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\(even nos inclusive\\)","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\(even numbers only\\)","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\(even incl\\)","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\(all even numbers\\)","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\(consec even No's\\)","(EVN)",x, ignore.case = TRUE)
+
+  # Last Chance
+  # These will catch any missed but a too broad
+  x <- gsub("odd\\)","(ODD)",x, ignore.case = FALSE)
+  x <- gsub("even\\)","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\(odd\\b","(ODD)",x, ignore.case = FALSE)
+  x <- gsub("\\(even\\b","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\binclusiveodd numbers\\b","(ODD)",x, ignore.case = TRUE)
+  x <- gsub("\\binclusiveeven numbers\\b","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\bodd numbers inclusive\\b","(ODD)",x, ignore.case = TRUE)
+  x <- gsub("\\beven numbers inclusive\\b","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\bodd inclusive\\b","(ODD)",x, ignore.case = TRUE)
+  x <- gsub("\\beven inclusive\\b","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\bodd and inclusive\\b","(ODD)",x, ignore.case = TRUE)
+  x <- gsub("\\beven and inclusive\\b","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\bodd numbers\\b","(ODD)",x, ignore.case = TRUE)
+  x <- gsub("\\beven numbers\\b","(EVN)",x, ignore.case = TRUE)
+  
+  x <- gsub("\\binclusive\\b","(INC)",x, ignore.case = TRUE)
+  x <- gsub("\\bodd\\b ","(ODD)",x, ignore.case = FALSE)
+  x <- gsub("\\beven\\b ","(EVN)",x, ignore.case = TRUE)
+  
+  x <- gsub(" nos ","",x, ignore.case = TRUE)
+  x <- gsub("\\bthe site of\\b","",x, ignore.case = TRUE)
+  x <- gsub("\\bparts of\\b","",x, ignore.case = TRUE)
 
   # Split and calssify the part of the string
   a <- stringr::str_split(x, "(\\d+|\\(INC\\)|\\(ODD\\)|\\(EVN\\))")[[1]] 
@@ -207,6 +299,11 @@ split_numbers <- function(x){
   if("unit" %in% names(spt)){
     warning("Multiple units: ",x)
     return(x)
+  }
+  
+  if(names(spt[1]) == "modify"){
+    # Opening modifier ignore
+    spt <- spt[seq(2,length(spt))]
   }
   
   # the "38 to 56 Hither Bath Bridge (even), Brislington " case
