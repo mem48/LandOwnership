@@ -1,6 +1,7 @@
 library(sf)
 library(tmap)
 source("R/bing_api.R")
+path <- "C:/Users/malco/OneDrive - University of Leeds/Data/Land Ownership"
 
 for(i  in 1:100){
   # Sleep until 4am
@@ -14,9 +15,9 @@ for(i  in 1:100){
   
   # Do the Geocoding
   
-  files_todo <- list.files("data/for_geocoding", pattern = ".csv")
+  files_todo <- list.files(paste0(path,"/for_geocoding"), pattern = ".csv")
   files_todo <- gsub(".csv","",files_todo, fixed = TRUE)
-  files_done <- list.files("data/geocoded")
+  files_done <- list.files(paste0(path,"/geocoded"))
   files_done <- gsub(".Rds","",files_done, fixed = TRUE)
   files_done <- files_done[!grepl("_failed",files_done)]
   
@@ -30,7 +31,7 @@ for(i  in 1:100){
   files_todo <- files_todo[1]
   
   message("Today's file is: ", files_todo)
-  dat = read.csv(paste0("data/for_geocoding/",files_todo,".csv"))
+  dat = read.csv(paste0(path,"/for_geocoding/",files_todo,".csv"))
   if(nrow(dat) < 50000){
     message("Short file today only ",nrow(dat)," addresses")
     
@@ -42,8 +43,8 @@ for(i  in 1:100){
   res = res[!is.na(res$latitude),]
   res = sf::st_as_sf(res, coords = c("longitude","latitude"), crs = 4326)
   
-  saveRDS(res,paste0("data/geocoded/",files_todo,".Rds"))
-  saveRDS(res_missing,paste0("data/geocoded/",files_todo,"_failed.Rds"))
+  saveRDS(res,paste0(path,"/geocoded/",files_todo,".Rds"))
+  saveRDS(res_missing,paste0(path,"/geocoded/",files_todo,"_failed.Rds"))
   
   rm(res, res_missing, dat, files_done, files_todo, t_now, t_start, t_diff)
 }
