@@ -14,13 +14,13 @@ polys <- list()
 # fails at 68 city of london
 # Splitting a Line by a GeometryCollection is unsupported
 
-for(i in 68:length(zips)){
+for(i in 1:length(zips)){
   dir.create("tmp")
   
   unzip(file.path(onedrive,"Land Registry/INSPIRE Polygons",zips[i]),
         exdir = "tmp")
   poly <- read_sf("tmp/Land_Registry_Cadastral_Parcels.gml")
-  poly <- poly[,c("INSPIREID","VALIDFROM","BEGINLIFESPANVERSION","geometry")]
+  poly <- poly[,c("INSPIREID","VALIDFROM","BEGINLIFESPANVERSION")]
   message(Sys.time()," ",zips[i]," ",nrow(poly)," polygons")
   unlink("tmp", recursive = TRUE)
   
@@ -46,12 +46,35 @@ for(i in 68:length(zips)){
   grd_line <- stplanr::overline2(grd_line, "x", simplify = FALSE, quiet = TRUE)
   sub2 <- sub_line[grd_line,,op=st_overlaps]
   
+  #Problem with square boxes, so capture them 
+  sub3 <- sub_line[grd_line,,op=st_covers]
+  sub3 <- sub3[!sub3$INSPIREID %in% sub2$INSPIREID,]
+  if(nrow(sub3) > 0){
+    sub2 <- rbind(sub2, sub3)
+  }
+  rm(sub3)
+  
+  # qtm(sub2) + qtm(sub3, lines.col = "red")
+  # 
+  # foo = sub_line[sub_line$INSPIREID == 25826067,]
+  # bar = grd_line[foo,,op=st_intersects]
+  # qtm(foo) + qtm(bar[5,], lines.col = "red")
+  # st_contains(foo, bar)
+  # fizz = st_overlaps(bar, foo)
+  # 
+  # foo = as.data.frame(st_coordinates(foo))
+  # bar = as.data.frame(st_coordinates(bar))
+  # 
+  # st_intersects(foo, grd_line)
+  # plot(foo$GEOMETRY)
+  # plot(bar, add = TRUE, col = "red")
+  
   if(nrow(sub2) > 0){
     # Idea: Split the grid_line2 at the polygon boundaires so each line is only the join between two polygons
     # Then in a loop for each line select the two polygons an merge
     suppressWarnings(sub2_pt <- st_cast(sub2,"POINT"))
     sub2_pt <- sub2_pt[grd_line, ]
-    sub2_pt <- sub2_pt[!duplicated(sub2_pt$geometry),]
+    sub2_pt <- sub2_pt[!duplicated(sub2_pt$GEOMETRY),]
     sub2_pt <- st_combine(sub2_pt)
     
     grd_line <- lwgeom::st_split(grd_line, sub2_pt)
@@ -83,7 +106,7 @@ for(i in 68:length(zips)){
       sub2_new <- sub2_new[!sub2_new$INSPIREID %in% sub2_sel$INSPIREID,]
       sub2_sel_geom <- st_union(sub2_sel)
       sub2_sel <- sub2_sel[1,]
-      sub2_sel$geometry <- sub2_sel_geom
+      sub2_sel$GEOMETRY <- sub2_sel_geom
       sub2_new <- rbind(sub2_new, sub2_sel)
     }
     
@@ -111,13 +134,13 @@ for(i in 68:length(zips)){
       poly_sel <- rbind(poly_sel, sqr)
       poly_sel_geom <- st_union(poly_sel)
       poly_sel <- poly_sel[1,]
-      poly_sel$geometry <- poly_sel_geom
+      poly_sel$GEOMETRY <- poly_sel_geom
       poly_new <- rbind(poly_new, poly_sel)
     }
   }
   
   # check class
-  if("sfc_POLYGON" %in% class(poly_new$geometry)){
+  if("sfc_POLYGON" %in% class(poly_new$GEOMETRY)){
     # DO nothing
   } else {
     poly_mp <- poly_new[st_geometry_type(poly_new) == "MULTIPOLYGON",]
@@ -127,10 +150,13 @@ for(i in 68:length(zips)){
     rm(poly_mp)
   }
   
-  poly_new$area <- as.numeric(st_area(poly_new))
+  poly_new$area <- round(as.numeric(st_area(poly_new)))
   poly_new <- st_transform(poly_new, 4326)
   poly_new <- sf::st_make_valid(poly_new)
   polys[[i]] <- poly_new
+  
+  # plot(poly$GEOMETRY)
+  # plot(st_transform(poly_new$GEOMETRY, 27700), add = T, border = "red")
   
   rm(poly, poly_new, grd, grd_line, lin, poly_sel, poly_sel_geom, poly_squares,
      sqr, sub,sub_line, sub2, sub2_new, sub2_pt, sub2_sel, sub2_sel_geom, j)
@@ -138,29 +164,41 @@ for(i in 68:length(zips)){
 
 names(polys) <- gsub(".zip","",zips)
 
-polys <- rbindlist(polys, idcol = "local_authority", fill=TRUE)
-polys <- st_as_sf(polys)
+for(i in 1:length(polys)){
+  x <- polys[[i]]
+  x <- x[!st_is_empty(x),]
+  x <- st_cast(x, "MULTIPOLYGON")
+  polys[[i]] <- x
+  rm(x)
+}
 
-#TODO: add cleaning of polys that cross LA boundaries
+polys_all <- rbindlist(polys, idcol = "local_authority", fill=TRUE)
+polys_all <- st_as_sf(polys_all)
 
-polys <- polys[!duplicated(polys$geometry),]
+#TODO: add cleaning of polys_all that cross LA boundaries
+
+polys_all <- polys_all[!duplicated(polys_all$GEOMETRY),]
 
 
-saveRDS(polys, "data/INSPIRE_polygons_cleaned.Rds")
+saveRDS(polys_all, "data/INSPIRE_polygons_cleaned_v2.Rds")
 
 # Select Large areas
-polys <- polys[,c("INSPIREID","local_authority","area")]
+polys_all <- polys_all[,c("INSPIREID","local_authority","area")]
 
-polys_large <- polys[polys$area > 404686,] # 100 acres
-polys_medium <- polys[polys$area > 40468.6,] # 10 acres
+polys_large <- polys_all[polys_all$area > 404686,] # 100 acres
+polys_medium <- polys_all[polys_all$area > 40468,] # 10 acres
 
-polys <- st_make_valid(polys) 
+polys_all <- st_make_valid(polys_all)
 
-st_write(polys_large,"data/tilegeojson/inspire_clean_large.geojson", delete_dsn = FALSE)
-st_write(polys_medium,"data/tilegeojson/inspire_clean_medium.geojson", delete_dsn = FALSE)
+st_precision(polys_all) <- 10000000
+st_precision(polys_large) <- 10000000
+st_precision(polys_medium) <- 10000000
+
+st_write(polys_large,"data/tilegeojson/inspire_clean_large_v2.geojson", delete_dsn = FALSE)
+st_write(polys_medium,"data/tilegeojson/inspire_clean_medium_v2.geojson", delete_dsn = FALSE)
 #st_write(polys,"data/tilegeojson/inspire_clean.geojson", delete_dsn = FALSE)
 
-write_geojson <- function(x, path){
+write_geojson <- function(x, path, digits = 7){
   headder <- paste0('{\n"type":"FeatureCollection",\n"name": "',deparse(substitute(x)),'",')
   if(sf::st_is_longlat(x)){
     headder <- paste0(headder,'"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },\n')
@@ -169,14 +207,19 @@ write_geojson <- function(x, path){
   footer <- ']\n}'
   commas <- c(rep(',', nrow(x) - 1),'')
   x <- c(headder, 
-         paste0(geojsonsf::sf_geojson(x, atomise = TRUE),commas),
+         paste0(geojsonsf::sf_geojson(x, atomise = TRUE, digits = digits),commas),
          footer)
   data.table::fwrite(list(x), path, quote  = FALSE)
 }
 
 message(Sys.time())
-write_geojson(polys, "data/tilegeojson/inspire_clean.geojson")
+write_geojson(polys_all, "data/tilegeojson/inspire_clean_v2.geojson")
 message(Sys.time())
+
+# Null Geometry in resutls for
+# INSPIREID 373965 in Ashfield
+
+
 
 # write_geojson(polys[1:10,], "data/tilegeojson/inspire_test.geojson")
 # 

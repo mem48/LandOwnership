@@ -109,6 +109,9 @@ text_sats$support <- NULL
 text_sats$nchar <- nchar(text_sats$term)
 text_sats <- text_sats[order(text_sats$nchar, text_sats$count, decreasing = TRUE),]
 
+# Bad string contain
+bad <- c("land","mines","garage","building")
+
 # Remove strings that are shorter versions of longer strings
 sub_check <- function(x,y){
   r <- sum(stringi::stri_detect_fixed(y, x, max_count = 2), na.rm = TRUE)
@@ -120,7 +123,7 @@ sub_check <- function(x,y){
 }
 
 message(Sys.time())
-plan(multisession, workers = 20)
+plan(multisession, workers = 30)
 sub = future_map_lgl(text_sats$term, sub_check, y = text_sats$term, .progress = TRUE)
 plan(sequential)
 message(Sys.time())
@@ -146,6 +149,8 @@ text_rem1 <- unique(text_rem$term[text_rem$remove == "t"])
 text_rem2 <- unique(text_rem$possible)
 text_rem2 <- text_rem2[!is.na(text_rem2)]
 text_rem3 <- c("Land lying to the South, East and northwest of",
+               "highway land",
+               "being land and buildings at ",
                "all mines minerals and quarries (except stone quarries) under the land shown edged with red on the plan of the above title filed at the Registry and being",
                "and other land",
                "The Freehold mines and minerals mines quarries minerals and mineral substances other than coal and coal mines whatsoever whether opened or unopened under the land shown edged red on the plan to the above title filed at the Land Registry being ",
@@ -184,6 +189,7 @@ text_rem3 <- c("Land lying to the South, East and northwest of",
                "including the following ancillary powers of working granted by a Conveyance of the same  dated 30 July 1969 made between (1) Martha Massey (Vendor) and (2) Imperial Chemical Industries Limited (Purchaser):-  Including full right and liberty for the Purchaser and its assigns and all persons authorised by it to take all usual and necessary means for searching getting pumping and taking away  through any adjoining properties but subject to the payment by the Purchaser and its assigns to the Vendor and her successors in title or other person or persons entitled thereto of compensation for all damage or injury which she or they or her or their tenants might sustain by reason of the working of the said mines and minerals mineral substances salt rock or salt brine including any damage or injury occasioned to the surface of the land or to any buildings for the time being erected thereon",
                "using the subsoil or undersurface of the said land and of constructing (but by underground workings only) and maintaining in or through such subsoil or undersurface tunnels or works authorised by the said Act of 1936. Together with the space occupied by such tunnels and works  subsoil excavated in the construction thereof. The land affected by such easement or right is",
                "The Freehold mines and minerals lying under or upon the land shown hatched mauve on the plan filed at the Registry and being Lower Forest, Treflach, Oswestry SY10 9HT are included in this title.   The Freehold mines and minerals lying under or upon the land tinted mauve on the plan filed at the Registry and being Middle Forest, Treflach, Oswestry are included in this title",
+               "The Freehold mines and minerals lying under the land shown edged and numbered in green and on the plan of the above title filed at the Registry and being land at",
                "all mines minerals metal  substance or product whatsoever beyond the distance of 60.96m (200 feet) from the surface and whether opened or unopened worked or unworked, excluding any mines and minerals which vested in the Coal Authority pursuant to the Coal Act 1938, under the land shown edged with red on the plan of the above title filed at the Registry and being ",
                "all mines minerals metal  substance or product whatsoever beyond the distance of 60.96 metres (200 feet) from the surface and whether opened or unopened worked or unworked, excluding any mines and minerals which vested in the Coal Authority pursuant to the Coal Act 1938, under the land shown edged with red on the plan of the above title filed at the Registry and being  ",
                "all the mines and minerals under or within the land comprised in a conveyance dated 2 August 1944 made between (1) G B Holt and (2) G W Conner and a conveyance dated 15 March 1968 made between (1) T Foxton (2) Lloyds Bank Limited and (3) G W Conner Limited lying under the land shown edged with red on the plan of the above title filed at the Registry and being",
@@ -198,7 +204,8 @@ text_rem3 <- c("Land lying to the South, East and northwest of",
                "The description of the registered estate is an entry made under rule 5(a) of the Land Registration Rules 2003 and it is not a note to which paragraph 2 of Schedule 8 to the Land Registration Act 2002 refers that the registered estate includes the mines or minerals under the land edged and numbered in green on the title plan. The mines and minerals under the said l title plan are only included in the registration to the extent that they were so included before the Transfers of the said land edged and numbered in green",
                ", including the following ancillary powers of working granted by a Conveyance of the same  dated 30 July 1969 made between (1) Martha Massey (Vendor) and (2) Imperial Chemical Industries Limited (Purchaser):-  Including full right and liberty for the Purchaser and its assigns and all persons authorised by it to take all usual and necessary means for searching getting pumping and taking away  through any adjoining properties but subject to the payment by the Purchaser and its assigns to the Vendor and her successors in title or other person or persons entitled thereto of compensation for all damage or injury which she or they or her or their tenants might sustain by reason of the working of the said mines and minerals mineral substances salt rock or salt brine including any damage or injury occasioned to the surface of the land or to any buildings for the time being erected thereon",
                "all mines minerals and quarries (except stone quarries) under the land shown edged with red on the plan of the above title filed at the Registry and being",
-               "he description of the registered estate is an entry made under rule 5(a) of the Land Registration Rules 2003 and it is not a note to which paragraph 2 of Schedule 8 to the Land Registration Act 2002 refers that the registered estate includes the mines or minerals under the land edged and numbered in green on the title plan. The mines and minerals under the said l title plan are only included in the registration to the extent that they were so included before the Transfers of the said land edged and numbered in green"
+               "he description of the registered estate is an entry made under rule 5(a) of the Land Registration Rules 2003 and it is not a note to which paragraph 2 of Schedule 8 to the Land Registration Act 2002 refers that the registered estate includes the mines or minerals under the land edged and numbered in green on the title plan. The mines and minerals under the said l title plan are only included in the registration to the extent that they were so included before the Transfers of the said land edged and numbered in green",
+               "() are included in the title.                                         The description of the registered estate is an entry made under rule 5(a) of the Land Registration Rules 2003 and it is not a note to which paragraph 2 of Schedule 8 to the Land Registration Act 2002 refers that the registered estate includes the mines or minerals under the land edged and numbered in green on the title plan. The mines and minerals under the said land on the title plan are only included in the registration to the extent that they were so included before the Transfers of the said land edged and numbered in green"
                )
 
 
@@ -208,6 +215,9 @@ text_rem <- text_rem[order(text_rem$nchar, decreasing = TRUE),]
 
 remove_strings <- function(x, y){
   for(i in seq_along(y)){
+    x <- stringi::stri_replace_all_fixed(x, y[i],"", 
+                                         opts_fixed = stringi::stri_opts_fixed(case_insensitive = TRUE))
+    # Check again
     x <- stringi::stri_replace_all_fixed(x, y[i],"", 
                                          opts_fixed = stringi::stri_opts_fixed(case_insensitive = TRUE))
   }
@@ -221,14 +231,26 @@ remove_strings <- function(x, y){
 # remove_strings(x,y)
 
 message(Sys.time())
-plan(multisession, workers = 20)
+plan(multisession, workers = 30)
 AddressLine = future_map_chr(freehold_pc_land$`Property Address`, remove_strings, y = text_rem$term, .progress = TRUE)
 plan(sequential)
 message(Sys.time())
 
+# Do it 
+
+
+
+AddressLine <- data.frame(AddressLine = AddressLine)
+AddressLine$nchar <- nchar(AddressLine$AddressLine)
+AddressLine$`Property Address` <- freehold_pc_land$`Property Address`
+
+
 # Checks
-foo = AddressLine[grepl(" land ",AddressLine)]
-foo = foo[order(nchar(foo), decreasing = TRUE)]
+foo = AddressLine[grepl(" land ",AddressLine$AddressLine),]
+foo = foo[order(foo$nchar, decreasing = TRUE),]
+
+write.csv(foo, "data/common_land_terms2.csv", row.names = FALSE)
+
 
 # Some of these addresses nolonger refer to land
 res_clean$land <- grepl("\\bland\\b", res_clean$AddressLine, ignore.case = TRUE)

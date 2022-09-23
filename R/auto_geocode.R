@@ -1,18 +1,9 @@
 library(sf)
 library(tmap)
 source("R/bing_api.R")
-path <- "C:/Users/malco/OneDrive - University of Leeds/Data/Land Ownership"
-
-for(i  in 1:100){
-  # Sleep until 4am
-  t_now <- lubridate::now("GMT")
-  t_start <- lubridate::today("GMT") + 1 + lubridate::hours(3)
-  t_diff <- difftime(t_start, t_now, units="secs")
-  t_diff <- round(as.numeric(t_diff))
-  
-  message(Sys.time()," sleeping for ",t_diff," seconds")
-  Sys.sleep(t_diff)
-  
+#path <- "C:/Users/malco/OneDrive - University of Leeds/Data/Land Ownership"
+path <- "D:/OneDrive - University of Leeds/Data/Land Ownership"
+#for(i  in 1:100){
   # Do the Geocoding
   
   files_todo <- list.files(paste0(path,"/for_geocoding"), pattern = ".csv")
@@ -36,6 +27,17 @@ for(i  in 1:100){
     message("Short file today only ",nrow(dat)," addresses")
     
   }
+  
+  # Sleep until 4am
+  t_now <- lubridate::now("GMT")
+  t_start <- lubridate::today("GMT") + 1 + lubridate::hours(3)
+  t_diff <- difftime(t_start, t_now, units="secs")
+  t_diff <- round(as.numeric(t_diff))
+  
+  #message(Sys.time()," sleeping for ",t_diff," seconds")
+  #Sys.sleep(t_diff)
+  
+  # Do the Geocoding#
   message(Sys.time(), " starting")
   res = bing_geocode_batch(dat)
   message(Sys.time(), " finished")
@@ -46,6 +48,8 @@ for(i  in 1:100){
   saveRDS(res,paste0(path,"/geocoded/",files_todo,".Rds"))
   saveRDS(res_missing,paste0(path,"/geocoded/",files_todo,"_failed.Rds"))
   
+  message("Got ",nrow(res)," results")
+  
   rm(res, res_missing, dat, files_done, files_todo, t_now, t_start, t_diff)
-}
+#}
 

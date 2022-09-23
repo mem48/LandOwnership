@@ -4,8 +4,10 @@ library(sf)
 library(tmap)
 tmap_mode("view")
 
+path <- "D:/OneDrive - University of Leeds/Data/Land Ownership"
+
 #fls <- "UK_freehold_nopc_simple_batch_010.Rds"
-fls <- list.files("data/geocoded/")
+fls <- list.files(paste0(path,"/geocoded/"))
 fls <- fls[!grepl("_old",fls)]
 
 fls_fail <- fls[grepl("_failed",fls)]
@@ -15,13 +17,13 @@ fls <- fls[!grepl("_failed",fls)]
 
 res <- list()
 for(i in seq(1, length(fls))){
-  res[[i]] <- readRDS(paste0("data/geocoded/",fls[i]))
+  res[[i]] <- readRDS(paste0(path,"/geocoded/",fls[i]))
 }
 res <- bind_rows(res)
 
 res_fail <- list()
 for(i in seq(1, length(fls_fail))){
-  res_fail[[i]] <- readRDS(paste0("data/geocoded/",fls_fail[i]))
+  res_fail[[i]] <- readRDS(paste0(path,"/geocoded/",fls_fail[i]))
 }
 res_fail <- bind_rows(res_fail)
 
@@ -53,8 +55,17 @@ res_medium <- res_medium[res_medium$confidence != "Low",]
 
 message(nrow(res_good)," good points out of ",sum(c(nrow(res_low),nrow(res_medium),nrow(res_good),nrow(res_wrongla),nrow(res_nola))))
 
-# tm_shape(res_medium[1:1000,])+
-#   tm_dots(col = "confidence", popup.vars = names(res_medium)[1:19])
+res_medium_good <- res_medium
+res_medium_good$matchCodes <- sapply(res_medium_good$matchCodes, function(x){
+  paste(x, collapse = " ")
+})
+table(res_medium_good$matchCodes)
+res_medium_good <- res_medium_good[res_medium_good$matchCodes == "Good",]
+res_medium_good <- res_medium_good[res_medium_good$entityType == "Address",]
+
+# These are not 100% good but a lot are and so may be worth capturing
+tm_shape(res_medium_good[1:1000,])+
+  tm_dots(col = "confidence", popup.vars = names(res_medium)[1:19])
 
 
 # Medium ones are mixed bag of good and bad

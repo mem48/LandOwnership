@@ -82,7 +82,7 @@ class_string <- function(str){
     return("link")
   }
   
-  if(str %in% c(" ", ",",", "," and ",", and "," and, ",", & "," & "," &, ")){
+  if(str %in% c(" ", ",",", "," and ",", and "," and, ",", & "," & "," &, ","/")){
     return("sep")
   }
   
