@@ -55,17 +55,17 @@ res_medium <- res_medium[res_medium$confidence != "Low",]
 
 message(nrow(res_good)," good points out of ",sum(c(nrow(res_low),nrow(res_medium),nrow(res_good),nrow(res_wrongla),nrow(res_nola))))
 
-res_medium_good <- res_medium
-res_medium_good$matchCodes <- sapply(res_medium_good$matchCodes, function(x){
-  paste(x, collapse = " ")
-})
-table(res_medium_good$matchCodes)
-res_medium_good <- res_medium_good[res_medium_good$matchCodes == "Good",]
-res_medium_good <- res_medium_good[res_medium_good$entityType == "Address",]
+# res_medium_good <- res_medium
+# res_medium_good$matchCodes <- sapply(res_medium_good$matchCodes, function(x){
+#   paste(x, collapse = " ")
+# })
+# table(res_medium_good$matchCodes)
+# res_medium_good <- res_medium_good[res_medium_good$matchCodes == "Good",]
+# res_medium_good <- res_medium_good[res_medium_good$entityType == "Address",]
 
 # These are not 100% good but a lot are and so may be worth capturing
-tm_shape(res_medium_good[1:1000,])+
-  tm_dots(col = "confidence", popup.vars = names(res_medium)[1:19])
+# tm_shape(res_medium_good[1:1000,])+
+#   tm_dots(col = "confidence", popup.vars = names(res_medium)[1:19])
 
 
 # Medium ones are mixed bag of good and bad
@@ -90,4 +90,4 @@ saveRDS(res_fail,"data/bing_final/bing_geocoded_fail.Rds")
 saveRDS(res_nola,"data/bing_final/bing_geocoded_nola.Rds")
 saveRDS(res_wrongla,"data/bing_final/bing_geocoded_wrongla.Rds")
 
-message(nrow(res_good),"/",nrow(res)," good points")
+message(nrow(res_good) + nrow(res_medium),"/",nrow(res)," good points")
