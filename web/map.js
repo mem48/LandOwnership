@@ -1,8 +1,8 @@
-mapboxgl.accessToken = 'pk.eyJ1IjoiZmFsY3MiLCJhIjoiY2w3MGR1YTIwMGQ4czNwcXliNnllazg1MiJ9.yeTfnwFemnZaOteDIw_iMg'
+
 // Setup Map
-const map = new mapboxgl.Map({
+const map = new maplibregl.Map({
 container: 'map', 
-style: 'mapbox://styles/mapbox/light-v10',
+style: 'https://www.carbon.place/pmtiles/style_pbcc_mb.json',
 center: [0, 52], 
 zoom: 6,
 maxZoom: 18,
@@ -12,21 +12,30 @@ attributionControl: false
 });
  
 // Add controls to the map.
-map.addControl(new mapboxgl.NavigationControl());
-map.addControl(new mapboxgl.AttributionControl({
+map.addControl(new maplibregl.NavigationControl());
+map.addControl(new maplibregl.AttributionControl({
 customAttribution: 'Contains OS data © Crown copyright 2022'
 }));
-map.addControl(new mapboxgl.GeolocateControl({
+map.addControl(new maplibregl.GeolocateControl({
 positionOptions: {
 enableHighAccuracy: true
 },
 trackUserLocation: true
 })
 ,'top-right');
-map.addControl(new mapboxgl.ScaleControl({
+map.addControl(new maplibregl.ScaleControl({
   maxWidth: 80,
   unit: 'metric'
 }),'bottom-right');
+
+
+map.addControl(
+new maplibregl.TerrainControl({
+source: 'terrainSource',
+exaggeration: 1.5
+})
+,'top-left');
+
     
 map.on('load', function() {
 map.addSource('inspire', {
@@ -47,6 +56,31 @@ map.addSource('landowners', {
 	'maxzoom': 16
 });
 
+map.addSource('terrainSource', {
+  'type': 'raster-dem',
+  'tiles': ["https://www.carbon.place/rastertiles/demwebp/{z}/{x}/{y}.webp"],
+  'tileSize': 512,
+  'minzoom': 0,
+	'maxzoom': 9
+});
+
+map.addSource('hillshadeSource', {
+  'type': 'raster-dem',
+  'tiles': ["https://www.carbon.place/rastertiles/demwebp/{z}/{x}/{y}.webp"],
+  'tileSize': 512,
+  'minzoom': 0,
+	'maxzoom': 9
+});
+
+map.addLayer(
+{
+'id': 'hillshading',
+'source': 'hillshadeSource',
+'type': 'hillshade'
+},
+'sea'
+);
+
 toggleLayer('landowners');
 toggleLayer('inspire');
 
@@ -66,7 +100,7 @@ var description = '<p> INSPIRE ID: ' + INSPIREID + '</p>' +
 '<p> Area: ' + area + '</p>';
  
 
-new mapboxgl.Popup()
+new maplibregl.Popup()
 .setLngLat(coordinates)
 .setHTML(description)
 .addTo(map);
