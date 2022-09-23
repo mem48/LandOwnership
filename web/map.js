@@ -53,7 +53,7 @@ map.addSource('landowners', {
 	'https://www.wisemover.co.uk/tiles/landowners/{z}/{x}/{y}.pbf'
 	],
 	'minzoom': 6,
-	'maxzoom': 16
+	'maxzoom': 14
 });
 
 map.addSource('terrainSource', {
