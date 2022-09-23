@@ -32,10 +32,10 @@ map.on('load', function() {
 map.addSource('inspire', {
 	'type': 'vector',
 	'tiles': [
-	'https://storage.googleapis.com/vector_tiles/inspire_full/{z}/{x}/{y}.pbf'
+	'https://www.wisemover.co.uk/tiles/inspire/{z}/{x}/{y}.pbf'
 	],
 	'minzoom': 6,
-	'maxzoom': 16
+	'maxzoom': 14
 });
 
 map.addSource('landowners', {
