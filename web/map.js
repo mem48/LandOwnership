@@ -34,7 +34,7 @@ new maplibregl.TerrainControl({
 source: 'terrainSource',
 exaggeration: 1.5
 })
-,'top-left');
+,'top-right');
 
     
 map.on('load', function() {
