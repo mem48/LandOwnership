@@ -109,8 +109,6 @@ text_sats$support <- NULL
 text_sats$nchar <- nchar(text_sats$term)
 text_sats <- text_sats[order(text_sats$nchar, text_sats$count, decreasing = TRUE),]
 
-# Bad string contain
-bad <- c("land","mines","garage","building")
 
 # Remove strings that are shorter versions of longer strings
 sub_check <- function(x,y){
@@ -215,11 +213,10 @@ text_rem <- text_rem[order(text_rem$nchar, decreasing = TRUE),]
 
 remove_strings <- function(x, y){
   for(i in seq_along(y)){
-    x <- stringi::stri_replace_all_fixed(x, y[i],"", 
-                                         opts_fixed = stringi::stri_opts_fixed(case_insensitive = TRUE))
-    # Check again
-    x <- stringi::stri_replace_all_fixed(x, y[i],"", 
-                                         opts_fixed = stringi::stri_opts_fixed(case_insensitive = TRUE))
+    for(j in 1:3){
+      x <- stringi::stri_replace_all_fixed(x, y[i],"", 
+                                           opts_fixed = stringi::stri_opts_fixed(case_insensitive = TRUE))
+    }
   }
   x
 }
@@ -237,16 +234,13 @@ plan(sequential)
 message(Sys.time())
 
 # Do it 
-
-
-
 AddressLine <- data.frame(AddressLine = AddressLine)
 AddressLine$nchar <- nchar(AddressLine$AddressLine)
 AddressLine$`Property Address` <- freehold_pc_land$`Property Address`
 
 
 # Checks
-foo = AddressLine[grepl(" land ",AddressLine$AddressLine),]
+foo = AddressLine[grepl("\\bland\\b",AddressLine$AddressLine, ignore.case = TRUE),]
 foo = foo[order(foo$nchar, decreasing = TRUE),]
 
 write.csv(foo, "data/common_land_terms2.csv", row.names = FALSE)
