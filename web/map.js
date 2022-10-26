@@ -15,7 +15,7 @@ hash: true
 // Add controls to the map.
 map.addControl(new maplibregl.NavigationControl());
 map.addControl(new maplibregl.AttributionControl({
-customAttribution: 'Contains OS data © Crown copyright 2022'
+customAttribution: 'Contains OS & HM Land Registry data © Crown copyright 2022, contains Royal Mail data © Royal Mail 2022'
 }));
 map.addControl(new maplibregl.GeolocateControl({
 positionOptions: {
