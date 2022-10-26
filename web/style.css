@@ -49,7 +49,7 @@ p.welcome-end {
   z-index: 1000; /* Sit on top */
   left: 5;
   top: 10px;
-  width: 400px;
+  width: 350px;
   height: 500px; /* Full height */
   overflow: auto; /* Enable scroll if needed */
   background-color: #FFFFFF; /* Fallback color */
