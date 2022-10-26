@@ -1,14 +1,15 @@
 # Break into csv of 50,000 for geocoding
 
-type = "UK_freehold_pc_single_long_simple"
+type = "UK_freehold_pc_land_simple"
 
 addr <- readRDS(paste0("data/",type,".Rds"))
 
-cols <- c("Id","Title Number","Property Address","AddressLine","AdminDistrict","PostalCode","CountryRegion")
+cols <- c("Id","Title Number","Property Address","AddressLine","AdminDistrict","PostalCode")
 addr <- addr[,cols]
-names(addr) = c("Id","Title Number","Property Address","addressLine","adminDistrict","postalCode","countryRegion")
+names(addr) = c("Id","Title Number","Property Address","addressLine","adminDistrict","postalCode")
 addr$countryRegion = "GB"
 
+path_main <- "D:/OneDrive - University of Leeds/Data/Land Ownership"
 
 # split into batches of 50,000
 n <- 50000
@@ -19,7 +20,7 @@ list_split <- split(addr, rep(1:ceiling(nr/n), each=n, length.out=nr))
 for(i in seq_len(length(list_split))){
 #for(i in 1){
   sub <- list_split[[i]]
-  path <- paste0("data/for_geocoding/",type,"_batch_",stringr::str_pad(i,3, pad = "0"),".csv")
+  path <- paste0(path_main,"/for_geocoding/",type,"_batch_",stringr::str_pad(i,3, pad = "0"),".csv")
   write.csv(sub, path,
             row.names = FALSE,
             fileEncoding = "UTF-8",

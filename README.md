@@ -99,9 +99,9 @@ So far, I've only looked at the freehold titles and because of the messy structu
 |Singe postcode and a short property address |	1,431,806	| 1,776,987|
 |Singe postcode and a long property address |	124,347| 456,337 addresses and 2,316 titles too complex to parse|
 |Multiple postcodes |	9,034 | 168,911|
-|Land with a postcode |	122,00| To do|
+|Land with a postcode |	122,00| 178,183|
 |Address without a postcode |	477,000 | 1,830,024 addresses and 111,191 titles too complex to parse, (mostly electrical substations)|
-|Land without a postcode |	878,000	| To do|
+|Land without a postcode |	878,000	| 1,189,172 addresses and 1,375 titles too complex to parse|
 
 
 Some of these are easier to work with than others. The 1.77 million simple addresses are easy to pass through a geocoder. But the "land" categories are harder. However, there are still opportunities. For example, many of the "land" titles are in the form of `address and associated land` in these cases removing the "and associated land" yields a simple geocodable address.
@@ -116,7 +116,7 @@ We've already identified at least 4 million addresses to geocode, which is non-t
 
 I've found that the Bing API is about 90% successful at geocoding addresses, doing well with clear and well-formatted ones but struggling when the address is more ambiguous. Fortunately, we have a backup plan. Firstly, some of the postcodes in the Land Registry are wrong. Postcodes do occasionally change, so it may be that the Land Registry simply records the postcode at the time of purchase. But this really seems to confuse the Bing Maps API. So I plan to rerun all the failed geolocations without the postcode to see if that helps. Secondly, the Google Maps API is better at geocoding ambiguous addresses such as "The Red Lion pub, Ipswich". Google allows 40,000 free geocodes per month, so useless as a main geocoder (it would take 8 years to do), but ok to pick up the failures from Bing and try again.
 
-Even so, this will take a while, so I will post some interim results in a few months. For now, I've put the first 300,000 points up on the map so I can test the code and visualisation.
+Even so, this will take a while, so I will post some interim results in a few months. For now, I've put the first 4.4 million points up on the map so I can test the code and visualisation.
 
 ## Thinking about next steps
 

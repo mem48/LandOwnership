@@ -201,14 +201,21 @@ split_numbers <- function(x){
   x <- gsub("even nos \\(inclusive\\)","(EVN)",x, ignore.case = TRUE)
   
   x <- gsub("\\(inclusive\\)","(INC)",x, ignore.case = TRUE)
+  x <- gsub("\\(consecutive\\)","(INC)",x, ignore.case = TRUE)
   x <- gsub("\\(both inclusive\\)","(INC)",x, ignore.case = TRUE)
   x <- gsub("\\(all inclusive\\)","(INC)",x, ignore.case = TRUE)
+  x <- gsub("\\(Odd & Even\\)","(INC)",x, ignore.case = TRUE)
   x <- gsub("\\(odd and even, inclusive\\)","(INC)",x, ignore.case = TRUE)
   x <- gsub("\\(odd and even inclusive\\)","(INC)",x, ignore.case = TRUE)
   x <- gsub("\\(even and odd, inclusive\\)","(INC)",x, ignore.case = TRUE)
   x <- gsub("\\(even and odd inclusive\\)","(INC)",x, ignore.case = TRUE)
   x <- gsub("\\(inc\\)","(INC)",x, ignore.case = TRUE)
+  x <- gsub("\\(inc \\)","(INC)",x, ignore.case = TRUE)
+  x <- gsub("\\(incl\\)","(INC)",x, ignore.case = TRUE)
+  x <- gsub("\\(incl \\)","(INC)",x, ignore.case = TRUE)
   x <- gsub("\\(all\\)","(INC)",x, ignore.case = TRUE)
+  x <- gsub("\\(consec\\)","(INC)",x, ignore.case = TRUE)
+  x <- gsub("\\(Consecutive\\)","(INC)",x, ignore.case = TRUE)
   
   x <- gsub("\\(odd\\)","(ODD)",x, ignore.case = TRUE)
   x <- gsub("\\(odd \\)","(ODD)",x, ignore.case = TRUE)
@@ -240,6 +247,7 @@ split_numbers <- function(x){
   x <- gsub("\\(even\\)","(EVN)",x, ignore.case = TRUE)
   x <- gsub("\\(even \\)","(EVN)",x, ignore.case = TRUE)
   x <- gsub("\\(evens\\)","(EVN)",x, ignore.case = TRUE)
+  x <- gsub("\\( evens \\)","(EVN)",x, ignore.case = TRUE)
   x <- gsub("\\(even only\\)","(EVN)",x, ignore.case = TRUE)
   x <- gsub("\\(even nos \\)","(EVN)",x, ignore.case = TRUE)
   x <- gsub("\\(even nos\\)","(EVN)",x, ignore.case = TRUE)
@@ -493,4 +501,23 @@ check_match2 <- function(x, perms, startonly = TRUE){
     y <- paste0(y, collapse = "|")
   }
   y
+}
+
+remove_strings <- function(x, y){
+  for(i in seq_along(y)){
+    for(j in 1:3){
+      x <- stringi::stri_replace_all_fixed(x, y[i],"", 
+                                           opts_fixed = stringi::stri_opts_fixed(case_insensitive = TRUE))
+    }
+  }
+  x
+}
+
+
+replace_strings <- function(x, y, rep){
+  for(i in seq_along(y)){
+    x <- stringi::stri_replace_all_regex(x, paste0("\\b",y[i],"\\b"),rep, 
+                                           opts_regex = stringi::stri_opts_regex(case_insensitive = TRUE))
+  }
+  x
 }

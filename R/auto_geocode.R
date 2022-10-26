@@ -50,6 +50,7 @@ path <- "D:/OneDrive - University of Leeds/Data/Land Ownership"
   
   message("Got ",nrow(res)," results")
   
+  
   rm(res, res_missing, dat, files_done, files_todo, t_now, t_start, t_diff)
 #}
 

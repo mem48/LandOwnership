@@ -35,7 +35,7 @@ names(bounds) <- c("la_point","geometry")
 
 
 # Split out by quality
-# Goode one are entityType == Address, confidence == High, and within England and Wales
+# Good ones are entityType == Address, confidence == High, and within correct LA
 
 res$check_id <- 1:nrow(res)
 
@@ -90,4 +90,4 @@ saveRDS(res_fail,"data/bing_final/bing_geocoded_fail.Rds")
 saveRDS(res_nola,"data/bing_final/bing_geocoded_nola.Rds")
 saveRDS(res_wrongla,"data/bing_final/bing_geocoded_wrongla.Rds")
 
-message(nrow(res_good) + nrow(res_medium),"/",nrow(res)," good points")
+message(nrow(res_good) + nrow(res_medium),"/",sum(c(nrow(res_low),nrow(res_medium),nrow(res_good),nrow(res_wrongla),nrow(res_nola)))," good points")
