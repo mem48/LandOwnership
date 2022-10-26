@@ -7,7 +7,8 @@ center: [0, 52],
 zoom: 6,
 maxZoom: 18,
 minZoom: 6,
-attributionControl: false
+attributionControl: false,
+hash: true
 
 });
  
