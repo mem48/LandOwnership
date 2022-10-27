@@ -6,3 +6,5 @@
 *.pbf
 data/tilegeojson/uk_owners.geojson
 README.html
+data/tilegeojson/uk_owners_sample.geojson
+data/tilegeojson/landowners_low/metadata.json
