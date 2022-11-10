@@ -6,6 +6,7 @@ library(stringr)
 
 source("R/find_onedrive.R")
 source("R/address_functions.R")
+source("R/text_cleaning.R")
 onedrive <- find_onedrive()
 
 dir.create("tmp")
@@ -81,12 +82,34 @@ res_clean <- res_clean[,names(lr)]
 lr <- rbind(lr, res_clean)
 rm(res_clean, lr_mulitpc)
 
-text_rem <- readxl::read_excel("data/common_land_terms.xlsx")
-text_rem$remove[is.na(text_rem$remove)] = "f"
-text_rem1 <- unique(text_rem$term[text_rem$remove == "t"])
+# Standard Cleaning
+lr$AddressLine <- clean_mines(lr$AddressLine)
+lr$AddressLine <- clean_spelling(lr$AddressLine)
+lr$AddressLine <- clean_compass(lr$AddressLine)
+lr$AddressLine <- clean_land(lr$AddressLine)
+lr$AddressLine <- clean_flats(lr$AddressLine)
 
-text_rem <- data.frame(term = c(text_rem1))
-text_rem$nchar <- nchar(text_rem$term)
-text_rem <- text_rem[order(text_rem$nchar, decreasing = TRUE),]
-text_rem <- text_rem[!is.na(text_rem$term),]
+#Clean Known Pharases
+text_rem <- readxl::read_excel("data/clean_strings.xlsx")
+lr$AddressLine <- clean_phrases(lr$AddressLine, text_rem)
+
+# Analysie Results
+place = read.csv("data/osm_unique_place_names.csv")
+text_stats = analyise_text(lr$AddressLine, place, 30)
+
+
+# foo = lr[,c("Property Address","AddressLine")]
+# foo$nchar <- nchar(foo$AddressLine)
+# write.csv(foo,"data/common_land_terms_overseas.csv", row.names = FALSE)
+# 
+# foo$after <- clean_flats(foo$AddressLine)
+# bar <- foo[grepl("floor",foo$after),] #224
+# 
+# write.csv(bar,"data/common_flat_terms_overseas.csv", row.names = FALSE)
+# 
+# 
+# text_stats2 = analyise_text(bar$after, place, 30)
+
+
+
 

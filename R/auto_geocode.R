@@ -54,3 +54,9 @@ path <- "D:/OneDrive - University of Leeds/Data/Land Ownership"
   rm(res, res_missing, dat, files_done, files_todo, t_now, t_start, t_diff)
 #}
 
+
+# files_todo = "UK_freehold_nopc_land_simple_batch_006"
+# dat = readRDS(paste0(path,"/geocoded/",files_todo,".Rds"))
+# qtm(dat, dots.col = "confidence")
+
+  
