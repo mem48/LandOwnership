@@ -1,6 +1,6 @@
 # Break into csv of 50,000 for geocoding
 
-type = "UK_freehold_nopc_land_simple"
+type = "Overseas_split"
 
 addr <- readRDS(paste0("data/",type,".Rds"))
 

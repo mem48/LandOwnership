@@ -10,14 +10,15 @@ source("R/text_cleaning.R")
 onedrive <- find_onedrive()
 
 dir.create("tmp")
-unzip(file.path(onedrive,"Land Registry/Overseas Ownership/OCOD_FULL_2022_07.zip"),
+unzip(file.path(onedrive,"Land Registry/UK Ownership/CCOD_FULL_2022_07.zip"),
       exdir = "tmp")
 
-lr <- readr::read_csv("tmp/OCOD_FULL_2022_07.csv", lazy = FALSE)
+lr <- readr::read_csv("tmp/CCOD_FULL_2022_07.csv", lazy = FALSE)
 unlink("tmp", recursive = TRUE)
 
 lr$Id <- seq_len(nrow(lr))
-lr <- lr[,c(1:7,40)]
+lr <- lr[lr$Tenure == "Leasehold",]
+lr <- lr[,c(1,3:7,36)]
 postcode_rx = c("\\b(?:[A-Za-z][A-HJ-Ya-hj-y]?[0-9][0-9A-Za-z]? ?[0-9][A-Za-z]{2}|[Gg][Ii][Rr] ?0[Aa]{2})\\b")
 
 lr$n_postcode <- stringi::stri_count_regex(lr$`Property Address`, postcode_rx)
@@ -88,10 +89,24 @@ lr$AddressLine <- clean_spelling(lr$AddressLine)
 lr$AddressLine <- clean_compass(lr$AddressLine)
 lr$AddressLine <- clean_land(lr$AddressLine)
 lr$AddressLine <- clean_flats(lr$AddressLine)
+lr$AddressLine <- clean_airspace(lr$AddressLine)
 
 #Clean Known Pharases
 text_rem <- readxl::read_excel("data/clean_strings.xlsx")
 lr$AddressLine <- clean_phrases(lr$AddressLine, text_rem)
+
+#  Analise Results
+place = read.csv("data/osm_unique_place_names.csv")
+text_stats = analyise_text(lr$AddressLine, place, 30)
+
+stop("Cleaning not yet finished")
+
+foo = lr[grepl("being bt property", lr$AddressLine,ignore.case = TRUE),]
+write.csv(foo,"tmp.csv")
+
+
+
+
 
 # Remove Postcodes
 lr$AddressLine <- stringi::stri_replace_all_regex(lr$AddressLine, replacement = "", postcode_rx)
@@ -113,9 +128,7 @@ names(lr_split) = c("Title Number","Tenure","Property Address","District","Count
 saveRDS(lr_split,"data/Overseas_split.Rds")
 
 
-# # Analysie Results
-# place = read.csv("data/osm_unique_place_names.csv")
-# text_stats = analyise_text(lr$AddressLine, place, 30)
+
 # 
 # 
 # foo = lr[grepl("parking spaces", lr$AddressLine),]

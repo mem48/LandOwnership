@@ -12,7 +12,7 @@ path <- "D:/OneDrive - University of Leeds/Data/Land Ownership"
   files_done <- gsub(".Rds","",files_done, fixed = TRUE)
   files_done <- files_done[!grepl("_failed",files_done)]
   
-  message("Done ",length(files_done)," of ",length(files_todo)," batches")
+  message("Doing ",length(files_done)," of ",length(files_todo)," batches")
   
   # Skip any done already
   files_todo <- files_todo[!files_todo %in% files_done]

@@ -1,5 +1,40 @@
 # Cleaning Functions
 
+clean_airspace <- function(x){
+  
+  # Remove the really long strings
+  airspace_start <- c("the airspace","airspace","being the air space",
+                      "the air space","air space",
+                      "Being airspace")
+  
+  
+  
+  
+  
+  airspace_end <- c("being",
+                 "being roof",
+                 "roof of",
+                 "foor of",
+                 "the roof", 
+                 "surface of",
+                 "roof surface",
+                 "above",
+                 "over")
+  
+  airspace_start <- paste0("(",paste(airspace_start, collapse = ")|("),")")
+  airspace_end <- paste0("(",paste(airspace_end, collapse = ")|("),")")
+  airspace <- paste0("(",airspace_start,").*(",airspace_end,")")
+  
+  x <- stringi::stri_replace_all_regex(str = x, pattern =  airspace,
+                                       replacement = "@ASP",
+                                       opts_regex = stringi::stri_opts_regex(case_insensitive = TRUE))
+  
+  message(sum(grepl("\\bairspace\\b",x,ignore.case = TRUE))," occurances of the word 'airspace' remain")
+  return(x)
+  
+}
+
+
 clean_mines <- function(x){
   
   # Remove the really long strings
