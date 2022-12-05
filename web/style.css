@@ -49,7 +49,7 @@ p.welcome-end {
   z-index: 1000; /* Sit on top */
   left: 5;
   top: 10px;
-  width: 350px;
+  width: 330px;
   height: 500px; /* Full height */
   overflow: auto; /* Enable scroll if needed */
   background-color: #FFFFFF; /* Fallback color */
@@ -57,4 +57,20 @@ p.welcome-end {
   -webkit-animation-duration: 0.4s;
   animation-name: fadeIn;
   animation-duration: 0.4s;
+}
+
+
+/* The Close Button */
+.close {
+  color: black;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
 }
