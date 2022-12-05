@@ -39,6 +39,7 @@ map.on('click', 'landowners', function(e) {
     document.getElementById("Tenure").innerHTML = e.features[0].properties.Tenure;
     document.getElementById("Property_Address").innerHTML = e.features[0].properties.Property_Address;
     document.getElementById("Company_No").innerHTML = e.features[0].properties.Company_No;
+    document.getElementById("Country").innerHTML = e.features[0].properties.Country;
     document.getElementById("Category").innerHTML = e.features[0].properties.Category;
     document.getElementById("geocoded_address").innerHTML = e.features[0].properties.geocoded_address;
     document.getElementById("geocode_type").innerHTML = e.features[0].properties.geocode_type;
