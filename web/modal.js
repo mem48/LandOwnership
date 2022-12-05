@@ -34,6 +34,7 @@ map.on('click', 'landowners', function(e) {
   //if (f.length == 1) {
     modal.style.display = "block";
     console.log("modal triggered");
+    console.log(e.features[0].properties);
 	
     document.getElementById("Title").innerHTML = e.features[0].properties.Title;
     document.getElementById("Tenure").innerHTML = e.features[0].properties.Tenure;
