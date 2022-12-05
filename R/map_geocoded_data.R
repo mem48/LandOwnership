@@ -19,12 +19,29 @@ unzip(file.path(onedrive,"Land Registry/UK Ownership/CCOD_FULL_2022_07.zip"),
 lr <- readr::read_csv("tmp/CCOD_FULL_2022_07.csv", lazy = FALSE)
 unlink("tmp", recursive = TRUE)
 
+dir.create("tmp")
+unzip(file.path(onedrive,"Land Registry/Overseas Ownership/OCOD_FULL_2022_07.zip"),
+      exdir = "tmp")
+
+lro <- readr::read_csv("tmp/OCOD_FULL_2022_07.csv", lazy = FALSE)
+unlink("tmp", recursive = TRUE)
+
 lr <- lr[,c("Title Number","Tenure","Property Address",
             "Proprietor Name (1)","Company Registration No. (1)",
             "Proprietorship Category (1)")]
 names(lr) <- c("Title","Tenure","Property_Address",
                "Proprietor","Company_No",
                "Category")
+
+lro <- lro[,c("Title Number","Tenure","Property Address",
+            "Proprietor Name (1)","Company Registration No. (1)",
+            "Proprietorship Category (1)","Country Incorporated (1)")]
+names(lro) <- c("Title","Tenure","Property_Address",
+               "Proprietor","Company_No",
+               "Category","Country")
+lr$Country <- "UK"
+
+lr <- rbind(lr, lro)
 
 dat = dat[,c("Title.Number",
              "formattedAddress","entityType")]

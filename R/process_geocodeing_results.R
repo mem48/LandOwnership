@@ -17,13 +17,17 @@ fls <- fls[!grepl("_failed",fls)]
 
 res <- list()
 for(i in seq(1, length(fls))){
-  res[[i]] <- readRDS(paste0(path,"/geocoded/",fls[i]))
+  x <- readRDS(paste0(path,"/geocoded/",fls[i]))
+  x$postalCode.x <- as.character(x$postalCode.x)
+  res[[i]]  <- x 
 }
 res <- bind_rows(res)
 
 res_fail <- list()
 for(i in seq(1, length(fls_fail))){
-  res_fail[[i]] <- readRDS(paste0(path,"/geocoded/",fls_fail[i]))
+  x <- readRDS(paste0(path,"/geocoded/",fls_fail[i]))
+  x$postalCode.x <- as.character(x$postalCode.x)
+  res_fail[[i]]  <- x 
 }
 res_fail <- bind_rows(res_fail)
 

@@ -63,7 +63,8 @@ clean_mines <- function(x){
                    "the lead","the mine","the minerals","the mines",
                    "the ore mines","the Royal Mines","the strata of",
                    "the stratrum of","using the subsoil",
-                   "clay slate stone")
+                   "clay slate stone",
+                   "evaporites including")
   
   mines_end <- c("filed at the Registry","construction thereof",
                  "marked X on the filed plan",
@@ -158,7 +159,15 @@ clean_spelling <- function(x){
                                        pattern =  spell_substation,
                                        replacement = "substation", 
                                        opts_regex = stringi::stri_opts_regex(case_insensitive = TRUE))
-
+  
+  spell_airspace <- c("\\bairpsace\\b","\\bairpsace\\b","\\baorspace\\b","\\bairpace\\b")
+  spell_airspace <- paste0("(",paste(spell_airspace, collapse = ")|("),")")
+  x <- stringi::stri_replace_all_regex(str = x, 
+                                       pattern =  spell_airspace,
+                                       replacement = "airspace", 
+                                       opts_regex = stringi::stri_opts_regex(case_insensitive = TRUE))
+  
+  return(x)
 }
 
 clean_land <- function(x){
@@ -232,6 +241,7 @@ clean_phrases <- function(x, text_rem, workers = 30){
   text_rem$nchar <- nchar(text_rem$term)
   text_rem <- text_rem[order(text_rem$nchar, decreasing = TRUE),]
   text_rem <- text_rem[!is.na(text_rem$term),]
+  text_rem <- text_rem[!duplicated(text_rem$term),]
   
   
   message("Starting at ",Sys.time()," with ",workers," workers")
@@ -250,7 +260,7 @@ clean_phrases <- function(x, text_rem, workers = 30){
   return(x)
 }
 
-analyise_text <- function(x, place, workers = 30){
+analyise_text <- function(x, place, workers = 30, longest_only = TRUE){
   # Places
   common_roads = c("Road","Close","Lane","Street","Drive","Avenue","Way","Court",
                    "Place","Gardens","Crescent","Grove","Hill","Park","Terrace",
@@ -312,16 +322,22 @@ analyise_text <- function(x, place, workers = 30){
     }
   }
   
-  message("Starting at ",Sys.time()," with ",workers," workers")
-  future::plan(future::multisession, workers = workers)
-  sub = furrr::future_map_lgl(text_sats$term, sub_check, y = text_sats$term, .progress = TRUE)
-  future::plan(future::sequential)
-  message("\nFinished at ",Sys.time())
+  if(longest_only){
+    message("Starting at ",Sys.time()," with ",workers," workers")
+    future::plan(future::multisession, workers = workers)
+    sub = furrr::future_map_lgl(text_sats$term, sub_check, y = text_sats$term, .progress = TRUE)
+    future::plan(future::sequential)
+    message("\nFinished at ",Sys.time())
+    
+    text_sats_unique <- text_sats[!sub,]
+    text_sats_unique <- text_sats_unique[!grepl("[0-9]",text_sats_unique$term),]
+    
+    return(text_sats_unique)
+  } else {
+    return(text_sats)
+  }
   
-  text_sats_unique <- text_sats[!sub,]
-  text_sats_unique <- text_sats_unique[!grepl("[0-9]",text_sats_unique$term),]
   
-  return(text_sats_unique)
 }
 
 regex_collapse <- function(x){

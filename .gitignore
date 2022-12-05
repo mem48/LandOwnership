@@ -45,3 +45,6 @@ data/tilegeojson/uk_owners.geojson
 data/tilegeojson/landowners/metadata.json
 data/tilegeojson/uk_owners_sample.geojson
 data/tilegeojson/landowners_low/metadata.json
+data/tilegeojson/landowners.mbtiles
+data/tilegeojson/landowners_low.mbtiles
+Rdata.RData

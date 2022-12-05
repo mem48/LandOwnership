@@ -96,16 +96,33 @@ text_rem <- readxl::read_excel("data/clean_strings.xlsx")
 lr$AddressLine <- clean_phrases(lr$AddressLine, text_rem)
 
 #  Analise Results
-place = read.csv("data/osm_unique_place_names.csv")
-text_stats = analyise_text(lr$AddressLine, place, 30)
+# place = read.csv("data/osm_unique_place_names.csv")
+# text_stats = analyise_text(lr$AddressLine, place, 30, longest_only = FALSE)
 
-stop("Cleaning not yet finished")
-
-foo = lr[grepl("being bt property", lr$AddressLine,ignore.case = TRUE),]
-write.csv(foo,"tmp.csv")
-
-
-
+lr$nchar <- nchar(lr$AddressLine)
+# lr_bad <- lr[lr$nchar > 200 | lr$nchar == 0,]
+# 
+# foo = lr[lr$nchar > 200,]
+# 
+# 
+#    stop("Cleaning not yet finished")
+# 
+# foo <- list()
+# for(i in 1:200){
+#   foo[[i]] <- lr[grepl(substr(text_stats$term[i],5,30), lr$AddressLine, fixed = TRUE),]
+# }
+# names(foo) <- text_stats$term[1:200]
+# foo <- bind_rows(foo, .id = "type")
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# foo = lr[grepl("title filed", lr$AddressLine,ignore.case = TRUE),]
+# write.csv(foo,"tmp.csv")
 
 
 # Remove Postcodes
@@ -121,11 +138,13 @@ AddressLine <- unlist(AddressLine)
 lr_split <- lr[rep(1:nrow(lr), times = reps),]
 lr_split$AddressLine <- AddressLine
 
-names(lr_split) = c("Title Number","Tenure","Property Address","District","County","AdminDistrict","PostalCode",
-                    "Id","n_postcode","AddressLine")
 
+names(lr_split) = c("Title Number","Property Address","AdminDistrict","County","Region","PostalCode",      
+                    "Id","n_postcode","AddressLine","nchar")
 
-saveRDS(lr_split,"data/Overseas_split.Rds")
+lr_split$Tenure <- "Leasehold"
+
+saveRDS(lr_split,"data/UK_leashold_split.Rds")
 
 
 
