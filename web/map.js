@@ -305,7 +305,7 @@ function switchLayer(layer) {
         });
         
         document.getElementById("legend").innerHTML = `
-        <h4>Geocoding accuracy</h4>
+        <h4>Tenure</h4>
         <div><span style="background-color: #4daf4a"></span>Freehold</div>
     		<div><span style="background-color: #e41a1c"></span>Leasehold</div>
     		<div><span style="background-color: #e0e0e0"></span>Other</div>`;
