@@ -37,6 +37,8 @@ exaggeration: 1.5
 })
 ,'top-right');
 
+map.addControl(new maplibregl.FullscreenControl());
+
     
 map.on('load', function() {
 map.addSource('inspire', {
