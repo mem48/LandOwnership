@@ -264,7 +264,7 @@ function switchLayer(layer) {
         });
         
         document.getElementById("legend").innerHTML = `
-        <h4>Organisation type</h4>
+        <h4>Geocoding accuracy</h4>
         <div><span style="background-color: #4daf4a"></span>Address</div>
     		<div><span style="background-color: #bd0026"></span>AdminDivision1</div>
     		<div><span style="background-color: #f03b20"></span>AdminDivision2</div>
@@ -315,7 +315,7 @@ function switchLayer(layer) {
         });
         
         document.getElementById("legend").innerHTML = `
-        <h4>Organisation type</h4>
+        <h4>Country of registration</h4>
         <div><span style="background-color: #b15928"></span>UK</div>
     		<div><span style="background-color: #a6cee3"></span>JERSEY</div>
     		<div><span style="background-color: #1f78b4"></span>GUERNSEY</div>
