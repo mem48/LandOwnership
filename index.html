@@ -42,10 +42,16 @@
   <p><label><input type="checkbox" id="inspirecheckbox" value="true" onclick="toggleLayer('inspire')" checked>Inspire Polygons</label></p>
   <p><label><input type="checkbox" id="landownerscheckbox" value="true" onclick="toggleLayer('landowners')" checked>Owner Points</label></p>
   <p><select id="layerinput" name="layerinput" onchange="switchLayer()" aria-label="Onwers Layer">
-      <option value="Category" selected>Type of Company</option>
+      <option value="Category" selected>Organisation type</option>
       <option value="geocode_type">Geocoding Accuracy</option>
+      <option value="Country">Country of registration</option>
   </select></p>
 </div>
+
+<!-- legend -->
+<div style="position: absolute; bottom: 10px; left: 10px; z-index: 9; opacity: 0.8; background-color: #EBEBEB;">
+</div>
+
 
 <!-- splash -->
 <div id="welcome" class="welcome">

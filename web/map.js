@@ -213,6 +213,20 @@ function switchLayer(layer) {
             }
         });
         
+        document.getElementById("legend").innerHTML = `
+        <h4>Organisation type</h4>
+        <div><span style="background-color: #a6cee3"></span>Co-operative Society</div>
+    		<div><span style="background-color: #1f78b4"></span>Community Benefit Society</div>
+    		<div><span style="background-color: #33a02c"></span>Housing Association</div>
+    		<div><span style="background-color: #b2df8a"></span>Industrial and Provident Society</div>
+    		<div><span style="background-color: #6a3d9a"></span>Local Authority/County Council</div>
+    		<div><span style="background-color: #ff7f00"></span>Registered Society</div>
+    		<div><span style="background-color: #cab2d6"></span>Unlimited Company</div>
+    		<div><span style="background-color: #b15928"></span>Corporate Body</div>
+    		<div><span style="background-color: #e31a1c"></span>Limited Company or Public Limited Company</div>
+    		<div><span style="background-color: #fb9a99"></span>Limited Liability Partnership</div>
+    		<div><span style="background-color: #e0e0e0"></span>Other</div>`;
+        
         break;
       case 'geocode_type':
         map.addLayer({
@@ -246,6 +260,74 @@ function switchLayer(layer) {
           			]
             }
         });
+        
+        document.getElementById("legend").innerHTML = `
+        <h4>Organisation type</h4>
+        <div><span style="background-color: #4daf4a"></span>Address</div>
+    		<div><span style="background-color: #bd0026"></span>AdminDivision1</div>
+    		<div><span style="background-color: #f03b20"></span>AdminDivision2</div>
+    		<div><span style="background-color: #fd8d3c"></span>AdminDivision3</div>
+    		<div><span style="background-color: #fecc5c"></span>CountryRegion</div>
+    		<div><span style="background-color: #ffffb2"></span>PopulatedPlace</div>
+    		<div><span style="background-color: #377eb8"></span>Postcode</div>
+    		<div><span style="background-color: #e41a1c"></span>Road</div>
+    		<div><span style="background-color: #f781bf"></span>Road Intersection</div>
+    		<div><span style="background-color: #e0e0e0"></span>Other</div>`;
+        
+        break;
+      case 'Country':
+
+        map.addLayer({
+            'id': 'landowners',
+            'type': 'circle',
+            'source': 'landowners',
+            'source-layer': 'landowners',
+            'paint': {
+              // make circles larger as the user zooms from z12 to z22
+              'circle-radius': {
+                'base': 2.5,
+                'stops': [
+                  [8, 3],
+                  [22, 180]
+                ]
+              },
+              'circle-stroke-width': 1,
+              "circle-color": [
+          			'match',
+          			['get', 'Country'],
+          			'UK','#b15928',
+                'JERSEY','#a6cee3',
+                'GUERNSEY','#1f78b4',
+                'BRITISH VIRGIN ISLANDS','#fb9a99',
+                'ISLE OF MAN','#b2df8a',
+                'LUXEMBOURG','#fdbf6f',
+                'GIBRALTAR','#33a02c',
+                'NETHERLANDS','#ff7f00',
+                'IRELAND','#cab2d6',
+                'CAYMAN ISLANDS','#e31a1c',
+                'PANAMA','#ffff99',
+                'CYPRUS','#6a3d9a',
+          			/* other */ '#e0e0e0'
+          			]
+            }
+        });
+        
+        document.getElementById("legend").innerHTML = `
+        <h4>Organisation type</h4>
+        <div><span style="background-color: #b15928"></span>UK</div>
+    		<div><span style="background-color: #a6cee3"></span>JERSEY</div>
+    		<div><span style="background-color: #1f78b4"></span>GUERNSEY</div>
+    		<div><span style="background-color: #fb9a99"></span>BRITISH VIRGIN ISLANDS</div>
+    		<div><span style="background-color: #e31a1c"></span>CAYMAN ISLANDS</div>
+    		<div><span style="background-color: #ffff99"></span>PANAMA</div>
+    		<div><span style="background-color: #b2df8a"></span>ISLE OF MAN</div>
+    		<div><span style="background-color: #33a02c"></span>GIBRALTAR</div>
+    		<div><span style="background-color: #ff7f00"></span>NETHERLANDS</div>
+    		<div><span style="background-color: #cab2d6"></span>IRELAND</div>
+    		<div><span style="background-color: #fdbf6f"></span>LUXEMBOURG</div>
+    		<div><span style="background-color: #6a3d9a"></span>CYPRUS</div>
+    		<div><span style="background-color: #e0e0e0"></span>Other</div>`;
+        
         break;
       default:
       console.log("Unknown layer");
