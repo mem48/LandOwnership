@@ -297,7 +297,7 @@ function switchLayer(layer) {
               "circle-color": [
           			'match',
           			['get', 'Tenure'],
-          			'Freenhold','#4daf4a',
+          			'Freehold','#4daf4a',
                 'Leasehold','#e41a1c',
           			/* other */ '#e0e0e0'
           			]
