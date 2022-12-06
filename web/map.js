@@ -277,6 +277,40 @@ function switchLayer(layer) {
     		<div><span style="background-color: #e0e0e0"></span>Other</div>`;
         
         break;
+        
+      case 'Tenure':
+        map.addLayer({
+            'id': 'landowners',
+            'type': 'circle',
+            'source': 'landowners',
+            'source-layer': 'landowners',
+            'paint': {
+              // make circles larger as the user zooms from z12 to z22
+              'circle-radius': {
+                'base': 2.5,
+                'stops': [
+                  [8, 3],
+                  [22, 180]
+                ]
+              },
+              'circle-stroke-width': 1,
+              "circle-color": [
+          			'match',
+          			['get', 'Tenure'],
+          			'Freenhold','#4daf4a',
+                'Leasehold','#e41a1c',
+          			/* other */ '#e0e0e0'
+          			]
+            }
+        });
+        
+        document.getElementById("legend").innerHTML = `
+        <h4>Geocoding accuracy</h4>
+        <div><span style="background-color: #4daf4a"></span>Freehold</div>
+    		<div><span style="background-color: #e41a1c"></span>Leasehold</div>
+    		<div><span style="background-color: #e0e0e0"></span>Other</div>`;
+        
+        break;
       case 'Country':
 
         map.addLayer({
