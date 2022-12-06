@@ -13,8 +13,10 @@ fls <- fls[!grepl("_old",fls)]
 fls_fail <- fls[grepl("_failed",fls)]
 fls <- fls[!grepl("_failed",fls)]
 
-# Read in worked
+fls_fail <- fls_fail[!grepl("Overseas_split_",fls_fail)]
+fls <- fls[!grepl("Overseas_split_",fls)]
 
+# Read in worked
 res <- list()
 for(i in seq(1, length(fls))){
   x <- readRDS(paste0(path,"/geocoded/",fls[i]))
@@ -30,6 +32,54 @@ for(i in seq(1, length(fls_fail))){
   res_fail[[i]]  <- x 
 }
 res_fail <- bind_rows(res_fail)
+
+# Handle Oversees mistake
+fls_over <- list.files(paste0(path,"/geocoded/"))
+fls_over <- fls_over[grepl("Overseas_split_",fls_over)]
+
+fls_over_fail <- fls_over[grepl("_failed",fls_over)]
+fls_over <- fls_over[!grepl("_failed",fls_over)]
+
+res_over <- list()
+for(i in seq(1, length(fls_over))){
+  x <- readRDS(paste0(path,"/geocoded/",fls_over[i]))
+  x$postalCode.x <- as.character(x$postalCode.x)
+  res_over[[i]]  <- x 
+}
+res_over <- bind_rows(res_over)
+
+res_over_fail <- list()
+for(i in seq(1, length(fls_over_fail))){
+  x <- readRDS(paste0(path,"/geocoded/",fls_over_fail[i]))
+  x$postalCode.x <- as.character(x$postalCode.x)
+  res_over_fail[[i]]  <- x 
+}
+res_over_fail <- bind_rows(res_over_fail)
+
+
+source("R/find_onedrive.R")
+onedrive <- find_onedrive()
+
+dir.create("tmp")
+unzip(file.path(onedrive,"Land Registry/Overseas Ownership/OCOD_FULL_2022_07.zip"),
+      exdir = "tmp")
+lr <- readr::read_csv("tmp/OCOD_FULL_2022_07.csv", lazy = FALSE)
+unlink("tmp", recursive = TRUE)
+lr$Id <- seq_len(nrow(lr))
+
+lr <- lr[,c("Id","District")]
+
+res_over <- left_join(res_over, lr, by = "Id")
+res_over$adminDistrict.x <- res_over$District
+res_over$District <- NULL
+
+res_over_fail <- left_join(res_over_fail, lr, by = "Id")
+res_over_fail$adminDistrict.x <- res_over_fail$District
+res_over_fail$District <- NULL
+
+res <- rbind(res, res_over)
+res_fail <- rbind(res_fail, res_over_fail)
+
 
 message(nrow(res)," geocoded")
 message(nrow(res_fail)," failed")
