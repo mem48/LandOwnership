@@ -50,5 +50,5 @@ names(dat) <- c("Title","geocoded_address","geocode_type","geometry")
 dat2 = left_join(dat, lr, by = "Title")
 qtm(dat2[sample(1:nrow(dat), 1000),])
 
-st_write(dat2,"data/tilegeojson/uk_owners.geojson", delete_dsn = TRUE)
-st_write(dat2[sample(1:nrow(dat), nrow(dat)/100),],"data/tilegeojson/uk_owners_sample.geojson", delete_dsn = TRUE)
+st_write(dat2,"data/tilegeojson/uk_owners2.geojson", delete_dsn = TRUE)
+st_write(dat2[sample(1:nrow(dat), nrow(dat)/10),],"data/tilegeojson/uk_owners_sample2.geojson", delete_dsn = TRUE)
