@@ -48,3 +48,5 @@ data/tilegeojson/landowners_low/metadata.json
 data/tilegeojson/landowners.mbtiles
 data/tilegeojson/landowners_low.mbtiles
 Rdata.RData
+data/UK_Overseas_Owners_Missing.zip
+data/tilegeojson/uk_owners_sample2.geojson
