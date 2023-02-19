@@ -39,8 +39,13 @@ exaggeration: 1.5
 
 map.addControl(new maplibregl.FullscreenControl());
 
+
+let protocol = new pmtiles.Protocol();
+maplibregl.addProtocol("pmtiles",protocol.tile);
+
     
 map.on('load', function() {
+/*
 map.addSource('inspire', {
 	'type': 'vector',
 	'tiles': [
@@ -49,7 +54,13 @@ map.addSource('inspire', {
 	'minzoom': 6,
 	'maxzoom': 14
 });
+*/
+map.addSource('inspire', {
+	'type': 'vector',
+	'url': 'pmtiles://https://www.wisemover.co.uk/pmtiles/landownership/inspire.pmtiles',
+});
 
+/*
 map.addSource('landowners', {
 	'type': 'vector',
 	'tiles': [
@@ -57,6 +68,12 @@ map.addSource('landowners', {
 	],
 	'minzoom': 6,
 	'maxzoom': 13
+});
+*/
+
+map.addSource('landowners', {
+	'type': 'vector',
+	'url': 'pmtiles://https://www.wisemover.co.uk/pmtiles/landownership/landowners.pmtiles',
 });
 
 map.addSource('terrainSource', {
