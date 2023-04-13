@@ -45,35 +45,16 @@ maplibregl.addProtocol("pmtiles",protocol.tile);
 
     
 map.on('load', function() {
-/*
+
 map.addSource('inspire', {
 	'type': 'vector',
-	'tiles': [
-	'https://www.wisemover.co.uk/tiles/inspire/{z}/{x}/{y}.pbf'
-	],
-	'minzoom': 6,
-	'maxzoom': 14
-});
-*/
-map.addSource('inspire', {
-	'type': 'vector',
-	'url': 'pmtiles://https://www.wisemover.co.uk/pmtiles/landownership/inspire.pmtiles',
+	'url': 'pmtiles://https://www.wisemover.co.uk/landownership/inspire.pmtiles',
 });
 
-/*
-map.addSource('landowners', {
-	'type': 'vector',
-	'tiles': [
-	'https://www.wisemover.co.uk/tiles/landowners/{z}/{x}/{y}.pbf'
-	],
-	'minzoom': 6,
-	'maxzoom': 13
-});
-*/
 
 map.addSource('landowners', {
 	'type': 'vector',
-	'url': 'pmtiles://https://www.wisemover.co.uk/pmtiles/landownership/landowners.pmtiles',
+	'url': 'pmtiles://https://www.wisemover.co.uk/landownership/landowners.pmtiles',
 });
 
 map.addSource('terrainSource', {
