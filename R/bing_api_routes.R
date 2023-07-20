@@ -1,0 +1,539 @@
+bing_route <- function(from = "53.736968,-1.728393", 
+                       to = "53.749414,-1.635435", 
+                       travelMode = "Driving",
+                       dateTime = NULL,
+                       avoid = NULL,
+                       distanceBeforeFirstTurn = NULL,
+                       heading = NULL,
+                       optimize = "time",
+                       optimizeWaypoints = FALSE,
+                       
+                       key = Sys.getenv("Bing_query_key")) {
+  
+  url <- "http://dev.virtualearth.net/REST/v1/Routes"
+  
+  query <- list(
+    wayPoint.1 = from,
+    wayPoint.2 = to,
+    avoid = avoid,
+    heading = heading,
+    distanceBeforeFirstTurn = distanceBeforeFirstTurn,
+    optimize = optimize,
+    optimizeWaypoints = optimizeWaypoints,
+    routeAttributes = "routePath,routepathannotations",
+    dateTime = dateTime, # Required for transit
+    key = key
+  )
+  
+  #"https://dev.virtualearth.net/REST/v1/Routes/alternate?key=ApzKwP7FNJPOzD8wNnTzTk2SkG7UzbdfFrBxVyXm8AQ54ftcqHxwpuBUCHsElsHq&o=json&jsonp=Microsoft.Maps.NetworkCallbacks.fe081a&fi=true&errorDetail=true&ur=gb&c=en-GB&wp.0=53.74952,-1.635352[Gelderd%20Road%2C%20LS27%207HH%2C%20England%2C%20United%20Kingdom]&wp.1=53.737025,-1.727514[M606%2C%20BD19%206PL%2C%20England%2C%20United%20Kingdom]&ig=true&ra=routepath,routepathannotations,routeproperties,transitStops,includeCameras,routeInfoCard,TransitFrequency&lm=driving,transit&cn=parkandrides&optmz=timeWithTraffic&du=mi&tt=departure&maxSolns=4&rpo=Points"
+  
+  
+  url2 <- build_url(url, query)
+  text <- curl::curl_fetch_memory(url2)
+  text <- rawToChar(text$content)
+  asjson <- try(RcppSimdJson::fparse(text),
+                silent = TRUE
+  )
+  
+  res <- asjson$resourceSets$resources[[1]]
+  res_legs <- res$routeLegs
+  res_path <- res$routePath
+  res$routeLegs <- NULL
+  res$routePath <- NULL
+  res_legs <- res_legs[[1]]
+  res_legs$actualEnd <- bing_parse_point(res_legs$actualEnd)
+  res_legs$actualStart <- bing_parse_point(res_legs$actualStart)
+  
+  res_legs_itinerary <- res_legs$itineraryItems[[1]]
+  res_legs_SubLegs <- res_legs$routeSubLegs
+  
+  res_path <- res_path[[1]]
+  res_path <- res_path$line$coordinates
+  res_path <- bing_parse_coordinates(res_path)
+  
+  res_legs_itinerary_details <- res_legs_itinerary$details
+  res_legs_itinerary_details <- dplyr::bind_rows(res_legs_itinerary_details, .id = "row_id")
+  
+  # Warings contain start end of congestions
+  warn <- bing_parse_warnings(res_legs_itinerary$warnings)
+  path_warn <- bing_match_traffic_to_legs(res_path, warn)
+  qtm(path_warn, lines.col = "severity")
+  
+  
+  
+  
+  
+}
+
+
+gather_traffic <- function(){
+  
+  q <- osmdata::opq(bbox = 'Leeds UK')
+  q <- osmdata::add_osm_feature(q ,key = 'highway')
+  osm <- osmdata::osmdata_sf(q)
+  
+  
+  
+  value = c("motorway","trunk","primary",
+            "secondary","tertiary",
+            "motorway_link","trunk_link",
+            "primary_link","secondary_link",
+            "tertiary_link")
+  
+}
+
+
+
+bing_annotate_path <- function(x){
+  coords = x$line$coordinates
+  annotations = x$annotations
+  annotations$index2 <- c(annotations$index[seq(2,nrow(annotations))],nrow(coords) - 1)
+  annotations$index = annotations$index + 1
+  annotations$index2 = annotations$index2 + 1
+  
+  ls <- list()
+  for(i in seq_len(nrow(annotations))){
+    sub <- coords[seq(annotations$index[i], annotations$index2[i]),2:1]
+    sub <- sf::st_sfc(list(sf::st_linestring(sub)), crs = 4326)
+    df <- sf::st_as_sf(data.frame(traffic = annotations$traffic[i], geometry = sub))
+    ls[[i]] <- df
+  }
+  
+  ls <- dplyr::bind_rows(ls)
+  
+}
+
+
+bing_parse_coordinates <- function(x){
+  coords = matrix(c(x[,2], x[,1]), ncol = 2)
+  coords = sf::st_linestring(coords)
+  coords = sf::st_sfc(list(coords), crs = 4326)
+  return(coords)
+}
+
+bing_match_traffic_to_legs <- function(l, warn){
+  
+  warn = warn[warn$warningType == "TrafficFlow",]
+  
+  p = sf::st_cast(l, "POINT")
+  wf = sf::st_as_sf(warn, coords = c("from_lng","from_lat"), crs = 4326)
+  wt = sf::st_as_sf(warn, coords = c("to_lng","to_lat"), crs = 4326)
+ 
+  wf_near <- unlist(nngeo::st_nn(wf,p, progress = FALSE), use.names = FALSE)
+  wt_near <- unlist(nngeo::st_nn(wt,p, progress = FALSE), use.names = FALSE)
+  
+  seqs <- list()
+  for(i in seq_along(wf_near)){
+    seqs[[i]] <- seq(wf_near[i],wt_near[i] )
+  }
+  names(seqs) <- paste0(seq(1, nrow(warn)),"_")
+  seqs <- unlist(seqs)
+  names(seqs) <- sapply(strsplit(names(seqs),"_"),`[[`,1)
+  
+  seqs <- data.frame(warn_id = names(seqs),
+                     segment_id = unname(seqs))
+  
+  pdf <- st_as_sf(p)
+  pdf$segment_id <- seq(1, nrow(pdf))
+  
+  pdf <- dplyr::left_join(pdf, seqs, by = "segment_id")
+  
+  pdf$warn_id[is.na(pdf$warn_id)] <- 0
+  
+  pdf$grp <- with(rle(pdf$warn_id), rep(seq_along(values), lengths))
+  
+  # Need to duplicate start/end points
+  chng <- pdf$grp[seq(1,nrow(pdf)-1)] != pdf$grp[seq(2,nrow(pdf))]
+  pdf$chng_before <- c(chng, FALSE)
+  pdf$chng_after <- c(FALSE, chng)
+  
+  pdf_before = pdf[pdf$chng_before & pdf$warn_id != 0,]
+  pdf_after = pdf[pdf$chng_after & pdf$warn_id != 0,]
+  
+  pdf_before$warn_id = 0
+  pdf_after$warn_id = 0
+  
+  pdf_before$grp = pdf_before$grp + 1
+  pdf_after$grp = pdf_after$grp - 1
+  
+  pdf = rbind(pdf, pdf_after, pdf_before)
+  pdf = pdf[order(pdf$segment_id),]
+  
+  plst <- dplyr::group_split(pdf, pdf$grp)
+  l_warn <- lapply(plst, points_to_lines)
+  l_warn <- dplyr::bind_rows(l_warn)
+  
+  warn$warn_id <- as.character(seq(1, nrow(warn)))
+  warn = warn[,c("warn_id","severity")]
+  l_warn = dplyr::left_join(l_warn, warn, by = "warn_id")
+  l_warn
+  
+}
+
+# qtm(l_warn, lines.col = "severity", lines.lwd = 3)
+# p1 = st_as_sf(warn, coords = c("from_lng","from_lat"), crs = 4326)
+# p2 = st_as_sf(warn, coords = c("to_lng","to_lat"), crs = 4326)
+# qtm(l) + qtm(p1) + qtm(p2, dots.col = "red")
+
+
+points_to_lines <- function(x){
+  warn_id = x$warn_id[1]
+  x = sf::st_coordinates(x)
+  x = sf::st_sfc(sf::st_linestring(x), crs = 4326)
+  x = sf::st_as_sf(x)
+  x$warn_id = warn_id
+  x
+}
+
+bing_parse_point <- function(x){
+  coords = lapply(x, `[[`, "coordinates")
+  coords = lapply(coords, function(y){sf::st_point(y[2:1])})
+  coords = sf::st_as_sfc(coords, crs = 4326)
+  return(coords)
+}
+
+bing_parse_coordinates <- function(x){
+  coords = matrix(c(x[,2], x[,1]), ncol = 2)
+  coords = sf::st_linestring(coords)
+  coords = sf::st_sfc(list(coords), crs = 4326)
+  return(coords)
+}
+
+bing_parse_warnings <- function(x){
+  y = x[lengths(x)>1]
+  y = dplyr::bind_rows(y)
+  orign <- strsplit(y$origin,",")
+  dest <- strsplit(y$to,",")
+  y$from_lat <- as.numeric(sapply(orign, `[`, 1))
+  y$from_lng <- as.numeric(sapply(orign, `[`, 2))
+  y$to_lat <- as.numeric(sapply(dest, `[`, 1))
+  y$to_lng <- as.numeric(sapply(dest, `[`, 2))
+  y = y[names(y) %in% c("severity","text","warningType","startTime","endTime",  
+                        "from_lat","from_lng","to_lat","to_lng")]
+  if(!is.null(y$endTime)){
+    y$endTime <- bing_parse_time(y$endTime)
+    y$startTime <- bing_parse_time(y$startTime)
+  }
+  return(y)
+}
+
+bing_parse_time <- function(x){
+  x[sapply(x, is.null)] <- NA
+  x <- unlist(lapply(x, `[[`, 1),use.names = FALSE )
+  x <- gsub("/Date(","",x, fixed = TRUE)
+  x <- gsub(")/","",x, fixed = TRUE)
+  x <- as.numeric(x)/1000
+  x <- as.POSIXct(x, origin = "1970-01-01")
+  x
+}
+
+bing_geocode <- function(path, query_key = Sys.getenv("Bing_query_key")){
+  
+  checkmate::assert_file_exists(path)
+  
+  url <- paste0("http://spatial.virtualearth.net/REST/v1/Dataflows/Geocode?input=csv&output=json&key=",
+  query_key)
+  
+  res <- httr::POST(url, body = httr::upload_file(path))
+  content <- httr::content(res, type = "text", encoding = "UTF-8")
+  content <- jsonlite::fromJSON(content)
+  if(content$statusCode != 201){
+    warning("Failed")
+  } else {
+    message("Success")
+    jobID <- content$resourceSets$resources[[1]]
+    return(jobID)
+  }
+  return(content)
+  
+}
+
+
+bing_geocode_status <- function(jobID, query_key = Sys.getenv("Bing_query_key")){
+  
+  url <- paste0("http://spatial.virtualearth.net/REST/v1/Dataflows/Geocode/",
+                jobID,
+                "?output=json&key=",
+                query_key)
+  
+  res <- httr::GET(url)
+  content <- httr::content(res, type = "text", encoding = "UTF-8")
+  content <- jsonlite::fromJSON(content)
+  if(content$statusCode != 200){
+    warning("Failed")
+  } else {
+    message("Success")
+    return(content$resourceSets)
+  }
+  
+  return(content)
+}
+
+
+
+bing_geocode_download <- function(jobID, query_key = Sys.getenv("Bing_query_key")){
+  
+  url <- paste0("https://spatial.virtualearth.net/REST/v1/dataflows/Geocode/",
+                jobID,
+                "/output/succeeded?key=",
+                query_key)
+  
+  res <- httr::GET(url)
+  content <- httr::content(res, type = "text", encoding = "UTF-8")
+  # content <- substr(content, 34, nchar(content))
+  # foo = read.table(text = content, sep = ",")
+  
+  content <- strsplit(content,"\n", fixed = TRUE)
+  content <- content[[1]]
+  content <- content[seq(2,length(content))]
+  #foo <- substr(content, nchar(content), nchar(content))
+  #content <- paste0(content,"\n")
+  
+  dir.create(file.path(tempdir(),"bing"))
+  writeLines(content, file.path(tempdir(),"bing/geocodes.csv"))
+  tab <- read.csv(file.path(tempdir(),"bing/geocodes.csv"))
+  unlink(file.path(tempdir(),"bing"), recursive = TRUE)
+  
+  # tab <- read.table(textConnection(content), sep = ",", fileEncoding = "UTF-8")
+  # tab <- read.table(textConnection(content[19]), sep = ",", )
+  
+  
+  names(tab) <-  c("Id","AddressLine","AdminDistrict","PostalCode",
+  "CountryRegion","Latitude","Longitude","EntityType",
+  "MatchCodes","Confidence","SouthLatitude", "WestLongitude",
+  "NorthLatitude", "EastLongitude", "StatusCode","FaultReason",
+  "TraceId")
+  
+  return(tab)
+}
+
+
+bing_to_sf <- function(tab){
+  tab <- sf::st_as_sf(tab, coords = c("Longitude","Latitude"), crs = 4326)
+  tab$TraceId <- NULL
+  return(tab)
+}
+
+
+build_url <- function(routerUrl, query) {
+  secs <- unlist(query, use.names = TRUE)
+  secs <- sapply(secs, utils::URLencode, reserved = TRUE)
+  secs <- paste0(names(secs), "=", secs)
+  secs <- paste(secs, collapse = "&")
+  secs <- paste0(routerUrl, "?", secs)
+  secs
+}
+
+
+bing_geocode_single <- function(countryRegion = "GB",
+                               adminDistrict = NULL,
+                               postalCode = NULL, 
+                               locality = NULL, 
+                               addressLine = NULL,
+                               includeNeighborhood = 0, 
+                               include = "ciso2", 
+                               maxResults = 5,
+                               cultureCode = "en-GB",
+                               key = Sys.getenv("Bing_query_key")){
+  
+
+  url <- "http://dev.virtualearth.net/REST/v1/Locations"
+
+  query <- list(
+    countryRegion = countryRegion,
+    adminDistrict = adminDistrict,
+    postalCode = postalCode,
+    locality = locality,
+    addressLine = addressLine,
+    includeNeighborhood = includeNeighborhood,
+    include = include,
+    maxResults = maxResults,
+    key = key,
+    c = cultureCode
+  )
+  
+  
+  
+  url <- build_url(url, query)
+  text <- curl::curl_fetch_memory(url)
+  text <- rawToChar(text$content)
+  
+  asjson <- try(RcppSimdJson::fparse(text),
+                silent = TRUE
+  )
+  
+  if("try-error" %in% class(asjson)){
+    message("Geocode failed: json parse failed")
+    return(data.frame(addressLine = NA,
+                      adminDistrict = NA,
+                      adminDistrict2 = NA,
+                      countryRegion = NA,
+                      formattedAddress = NA,
+                      locality = NA,
+                      postalCode = NA,
+                      countryRegionIso2 = NA ,
+                      latitude = NA,
+                      longitude = NA,
+                      confidence = NA,
+                      entityType = NA,
+                      matchCodes = NA))
+  }
+  
+  
+  if(asjson$statusCode != 200){
+    message("Geocode failed: ", asjson$statusDescription)
+    return(data.frame(addressLine = NA,
+                      adminDistrict = NA,
+                      adminDistrict2 = NA,
+                      countryRegion = NA,
+                      formattedAddress = NA,
+                      locality = NA,
+                      postalCode = NA,
+                      countryRegionIso2 = NA ,
+                      latitude = NA,
+                      longitude = NA,
+                      confidence = NA,
+                      entityType = NA,
+                      matchCodes = NA))
+    
+  }
+  
+  asjson <- asjson$resourceSets
+  
+  if(length(asjson$resources) > 1){
+    stop("Muliple resultss for ",addressLine)
+  }
+  
+  res <- asjson$resources[[1]]
+  
+  if(is.null(res)){
+    message("Geocode failed: no result returned")
+    return(data.frame(addressLine = NA,
+                      adminDistrict = NA,
+                      adminDistrict2 = NA,
+                      countryRegion = NA,
+                      formattedAddress = NA,
+                      locality = NA,
+                      postalCode = NA,
+                      countryRegionIso2 = NA ,
+                      latitude = NA,
+                      longitude = NA,
+                      confidence = NA,
+                      entityType = NA,
+                      matchCodes = NA))
+  }
+  
+  if(length(res$address) > 1){
+    res_address <- lapply(res$address, as.data.frame)
+    res_address <- dplyr::bind_rows(res_address)
+  } else {
+    res_address <- res$address[[1]]
+    res_address <- as.data.frame(res_address)
+  }
+  
+  if(length(res$point) > 1){
+    res_point <- lapply(res$point, as.data.frame)
+    res_point <- dplyr::bind_rows(res_point)
+  } else {
+    res_point <- res$point[[1]]
+    res_point <- as.data.frame(res_point)
+  }
+  
+  if(length(res_point$coordinates) > 0){
+    res_address$latitude <- res_point$coordinates[seq(1,length(res_point$coordinates), 2)]
+    res_address$longitude <- res_point$coordinates[seq(2,length(res_point$coordinates), 2)]
+  } else {
+    res_address$latitude <- NA
+    res_address$longitude <- NA
+  }
+  
+  res_address$confidence <- res$confidence
+  res_address$entityType <- res$entityType
+  res_address$matchCodes <- res$matchCodes
+  
+  return(res_address)
+  
+  
+}
+
+bing_geocode_single_try <- function(countryRegion = "GB",
+                                    adminDistrict = NULL,
+                                    postalCode = NULL, 
+                                    locality = NULL, 
+                                    addressLine = NULL,
+                                    includeNeighborhood = 0, 
+                                    include = "ciso2", 
+                                    maxResults = 5,
+                                    cultureCode = "en-GB",
+                                    key = Sys.getenv("Bing_query_key")){
+  
+  r <- try(bing_geocode_single(countryRegion = countryRegion,
+                                 adminDistrict = adminDistrict,
+                                 postalCode = postalCode, 
+                                 locality = locality, 
+                                 addressLine = addressLine,
+                                 includeNeighborhood = includeNeighborhood, 
+                                 include = include, 
+                                 maxResults = maxResults,
+                                 cultureCode = cultureCode,
+                                 key = key), silent = TRUE)
+  
+  if("try-error" %in% class(r)){
+    message("\nFailed on ",addressLine)
+    return(NULL)
+  } else {
+    return(r)
+  }
+  
+  
+}
+
+
+bing_geocode_batch <- function(dat){
+  
+  vars <- c("countryRegion","adminDistrict","postalCode","locality",
+            "addressLine","includeNeighborhood","include","maxResults","key")
+  vars <- names(dat)[names(dat) %in% vars]
+  
+  if(length(vars) < 4){
+    stop(" not enough valid columns")
+  }
+  dat$matchID <- as.character(seq_len(nrow(dat)))
+  
+  # r <- purrr::pmap_dfr(dat[,vars], bing_geocode_single)
+  r <- map_df_progress(dat[,vars], bing_geocode_single_try, .id = "matchID")
+  
+  r2 <- dplyr::left_join(dat, r, by = "matchID")
+  
+  return(r2)
+  
+}
+
+map_df_progress <- function(.x, .f, ..., .id = NULL) {
+  .f <- purrr::as_mapper(.f, ...)
+  pb <- progress::progress_bar$new(total = nrow(.x), force = TRUE)
+  
+  f <- function(...) {
+    pb$tick()
+    .f(...)
+  }
+  purrr::pmap_dfr(.x, f, ..., .id = .id)
+}
+
+
+# foo = bing_geocode_batch(dat[1:15,])
+# 
+# 
+# dat = read.csv("data/for_geocoding/UK_freehold_pc_single_short_batch_1.csv", skip = 1)
+# names(dat) = c(c("id","addressLine",
+#                  "adminDistrict","postalCode",
+#                  "countryRegion","Latitude",
+#                  "Longitude","EntityType",
+#                  "MatchCodes","Confidence",
+#                  "BoundingBox.SouthLatitude","BoundingBox.WestLongitude",
+#                  "BoundingBox.NorthLatitude","BoundingBox.EastLongitude",
+#                  "StatusCode","FaultReason",                           
+#                  "TraceId"))
+# dat <- dat[,1:5]
+# dat$countryRegion = "GB"
+# dat$id <- as.character(dat$id)
