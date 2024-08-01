@@ -28,16 +28,25 @@
   gtag('config', 'G-SFVXHLPJ8H');
 </script>
 
-<!-- Set Up Maplibre -->
+<!-- Set Up Maplibre 
 <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
 <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
 <link rel="stylesheet" href="web/style.css">
 <script src="web/lib/pmtiles/index.js"></script>
+-->
 
 </head>
 <body>
   
-<!-- layer select -->
+<div>
+  <h1>This website has moved</h1>
+  <p><img src="https://www.carbon.place/images/thumbnail.jpg" alt="Carbon & Place logo" width="200px"></p>
+  <p>This project is now part of <a href="https://www.carbon.place/landownership">Carbon & Place</a>. Please see the new website for more details.</p>
+  
+</div>  
+  
+  
+<!-- layer select 
 <div style="position: absolute; top: 10px; left: 10px; z-index: 9; opacity: 0.8; background-color: #EBEBEB;">
   <p><label><input type="checkbox" id="inspirecheckbox" value="true" onclick="toggleLayer('inspire')" checked>Inspire Polygons</label></p>
   <p><label><input type="checkbox" id="landownerscheckbox" value="true" onclick="toggleLayer('landowners')" checked>Owner Points</label></p>
@@ -48,13 +57,13 @@
       <option value="Tenure">Tenure</option>
   </select></p>
 </div>
-
-<!-- legend -->
+-->
+<!-- legend 
 <div style="position: absolute; top: 280px; left: 10px; z-index: 9; opacity: 0.8; background-color: #EBEBEB;" id="legend" class="legend">
 </div>
+-->
 
-
-<!-- splash -->
+<!-- splash 
 <div id="welcome" class="welcome">
 <h1> Welcome to the England and Wales land ownership map</h1>
 <p>This map is intended to aid public understanding of land ownership in England and Wales. It maps data published by the <a href = "https://www.gov.uk/government/organisations/land-registry">Land Registry</a>. For code and more information on data and methods see the <a href="https://github.com/mem48/LandOwnership/">GitHub repo</a>.</p>
@@ -115,9 +124,9 @@ function closewelcome() {
   
 }
 </script>
+-->
 
-
-<!-- map -->
+<!-- map 
 <div id="map" class="map" style='width: 100%; height: 600px;'></div>
 <h1>Interactive map of Land Registry data</h1>
 
@@ -132,8 +141,9 @@ The map shows two types of data:
 <p>The Land Registry does not publish data on who owns every piece of land in England and Wales.  But they do publish data on <a href="https://use-land-property-data.service.gov.uk/datasets/ccod">UK</a> and <a href="https://use-land-property-data.service.gov.uk/datasets/ocod">overseas</a> companies that own land. This map shows the locations of these properties by parsing the text of the land titles to detect and geocode addresses.  This is an imperfect process and the data is unstructured and complex, so there will be errors and missing data. The geocoding is a work in progress, currently about 6.1 million addresses have been mapped and more data will be added soon. As I have just dectected and geocoded addresses the points may not be in the correct locations. For example, "the field behind 4 to 6 Privet Drive" is not the same as "4 Privet Drive, 5 Privet Drive, and 6 Privet Drive" but we can't geocode "the field behind" so the code will detect three addresses and create three points one for each house. Therefore it to best to think of the points as in the vicinity of the correct address rather than an exact location.</p>
 
 <p>Other problems occur when the information the Land Registry provides is vague. For example "3 Church lane, London" there are many Church lanes in London, so it is hard to locate the correct address. The Land Registry also prove the Local Authority name so that can narrow it down a bit, but in some cases the same title will appear in multiple places on the map due to the ambiguous nature of the address.</p>
+-->
 
-<!-- The Modal -->
+<!-- The Modal 
 <div id="myModal" class="modal">
 <span class="close">&times;</span>
   <table>
@@ -185,6 +195,6 @@ The map shows two types of data:
 
 <script type="text/javascript" src="web/map.js"></script>
 <script type="text/javascript" src="web/modal.js"></script>
-
+-->
 </body>
 </html>
