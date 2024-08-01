@@ -8,7 +8,7 @@ The code focuses on two main objectives:
 2. Geocoding the UK and Oversees ownership data
 
 
-<span style="color:blue; font-weight: bold; font-size:200%"><a href="https://www.carbon.place/landownership">View the interactive map</a></span>
+<span style="color:blue; font-weight: bold; font-size:200%"><a href="https://www.carbon.place/landownership/#/landowners/#8/51.482/-0.151">View the interactive map</a></span>
 
 You can see the work-in-progress map using the link above, or read the explanation of the data and methods below. All the R code is available in this Repo.
 
