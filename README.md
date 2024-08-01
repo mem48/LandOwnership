@@ -8,9 +8,9 @@ The code focuses on two main objectives:
 2. Geocoding the UK and Oversees ownership data
 
 
-<span style="color:blue; font-weight: bold; font-size:200%"><a href="https://mem48.github.io/LandOwnership/">View the interactive map</a></span>
+<span style="color:blue; font-weight: bold; font-size:200%"><a href="https://www.carbon.place/landownership">View the interactive map</a></span>
 
-You can see the work in progress map using the link above, or read the explination of the data and methods below. All the R code is available in this Repo.
+You can see the work-in-progress map using the link above, or read the explanation of the data and methods below. All the R code is available in this Repo.
 
 ## Mapping the INSPIRE polygons
 
@@ -67,7 +67,7 @@ But there are a few limitations to her implementation.
 
 So we can do much better.
 
-This is in no way criticism of Shrubsole and Powell-Smith's excellent work. But I suspect it is a simply case of the limited resources available to them. In contrast, academics get privileged access to data and resources, which sometimes go unused. In this case, I have an enterprise-grade workstation that is usually off on evenings and weekends. So I can throw vastly more compute power at the problem for essentially zero cost.  Also, I love this kind of data wrangling puzzle, so I'm happy to spend some of my free time on it.
+This is in no way a criticism of Shrubsole and Powell-Smith's excellent work. But I suspect it is a simply case of the limited resources available to them. In contrast, academics get privileged access to data and resources, which sometimes go unused. In this case, I have an enterprise-grade workstation that is usually off on evenings and weekends. So I can throw vastly more compute power at the problem for essentially zero cost.  Also, I love this kind of data wrangling puzzle, so I'm happy to spend some of my free time on it.
 
 ### Challenges in Geocoding
 
@@ -131,7 +131,7 @@ At the moment I'm generating addresses to geocode faster than I can geocode them
 
 What I'm not going to do is try and get 100% coverage, I don't have the time. If somebody else wants to pick up the much shorter list of un-geocoded titles and come up with a solution that would be great. If not, I will still have improved the public understanding of the data and of who owns land significantly. 
 
-In principle, it would be possible to match the freehold points to the INSPIRE polygons. But in practice, I think this will be hard and prone to errors where there is ambiguity in the geolocation. For the moment I think the combination of point over the INSPIRE polygons is good enough to help people understand the extent of a land holding.
+In principle, it would be possible to match the freehold points to the INSPIRE polygons. But in practice, I think this will be hard and prone to errors where there is ambiguity in the geolocation. For the moment I think the combination of points over the INSPIRE polygons is good enough to help people understand the extent of a land holding.
 
 <figure>
 <img src='images/pointspolygons.JPG'/>
@@ -142,7 +142,7 @@ In principle, it would be possible to match the freehold points to the INSPIRE p
 
   <br />
   
-If you do want to check that the point and the polygon match, you can click on the polygon to get the INSPIRE ID, search for it on [the goverment website](https://search-property-information.service.gov.uk/search/search-by-inspire-id) and the property description should match the property address given for the point. I tested this for a few locations and it seems to work. Obviously once the less precise geocodes are added the correct polygon will be near the point rather than exactly under it.
+If you do want to check that the point and the polygon match, you can click on the polygon to get the INSPIRE ID, search for it on [the government website](https://search-property-information.service.gov.uk/search/search-by-inspire-id) and the property description should match the property address given for the point. I tested this for a few locations and it seems to work. Obviously once the less precise geocodes are added the correct polygon will be near the point rather than exactly under it.
 
 
 ## A few legal thoughts
