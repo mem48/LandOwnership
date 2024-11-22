@@ -50,3 +50,6 @@ data/tilegeojson/landowners_low.mbtiles
 Rdata.RData
 data/UK_Overseas_Owners_Missing.zip
 data/tilegeojson/uk_owners_sample2.geojson
+data/from_jonathan/malcom_enhanced.zip
+data/tilegeojson/landowners.pmtiles
+test.json
